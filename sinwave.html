@@ -10,17 +10,26 @@
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 </head>
 <body>
-	<button type="button" onclick="start()">Start</button>
-	<button type="button" onclick="stop()">Stop</button>
+	<div class="btn-group btn-group-toggle w-25" data-toggle="buttons">
+	  <label class="btn btn-secondary" onclick="start()">
+	    <input type="radio" name="playstatus" id="playstatus1" autocomplete="off">Start</input>
+	  </label>
+	  <label class="btn btn-secondary active" onclick="stop()">
+	    <input type="radio" name="playstatus" id="playstatus2" autocomplete="off" checked>Stop</input>
+	  </label>
+	</div>
 
-	<form id="channelSplitter">
-		<fieldset>
-			<legend>Select Channel</legend>
-			<label><input type="radio" name="LR" value="Ch_LR" checked="checked">L-R</input></label>
-			<label><input type="radio" name="LR" value="Ch_Left">L</input></label>
-			<label><input type="radio" name="LR" value="Ch_Right">R</input></label>
-		</fieldset>
-	</form>
+	<div class="btn-group btn-group-toggle w-25" data-toggle="buttons">
+	  <label class="btn btn-secondary active">
+	    <input type="radio" name="LR" id="LR1" autocomplete="off" checked>L-R</input>
+	  </label>
+	  <label class="btn btn-secondary">
+	    <input type="radio" name="LR" id="LR2" autocomplete="off">L</input>
+	  </label>
+	  <label class="btn btn-secondary">
+	    <input type="radio" name="LR" id="LR3" autocomplete="off">R</input>
+	  </label>
+	</div>
 
 	<form>
 		<fieldset id="frequencyList">
@@ -140,7 +149,7 @@
 			osc = null;
 		}
 	</script>
-	
+
 	<!-- Optional JavaScript -->
 	<!-- jQuery first, then Popper.js, then Bootstrap JS -->
 	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
