@@ -39,6 +39,8 @@
 	</div>
 
 	<script>
+		// ref: 多チャンネル信号の分離(splitter)/合成(merger)
+		// https://tomari.org/main/java/Sample/top5.php#splitter
 		var AudioContext = window.AudioContext || window.webkitAudioContext;
 		var acx = null;
 		var osc = null;
@@ -56,7 +58,7 @@
 				if (acx === null) {
 					acx = new AudioContext();
 				}
-				
+
 				osc = acx.createOscillator();
 
 				acx.createGain = acx.createGain || acx.createGainNode;
