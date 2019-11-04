@@ -11,7 +11,7 @@
 </head>
 <body>
 	<header class="sticky-top">
-	<div class="btn-group btn-group-toggle w-25" data-toggle="buttons">
+	<div class="btn-group btn-group-toggle w-50 m-2" data-toggle="buttons">
 	  <label class="btn btn btn-primary" onclick="start()">
 	    <input type="radio" name="playstatus" id="playstatus1" autocomplete="off">Start</input>
 	  </label>
@@ -19,8 +19,8 @@
 	    <input type="radio" name="playstatus" id="playstatus2" autocomplete="off" checked>Stop</input>
 	  </label>
 	</div>
-
-	<div class="btn-group btn-group-toggle w-25" data-toggle="buttons">
+	<br/>
+	<div class="btn-group btn-group-toggle w-50 m-2" data-toggle="buttons">
 	  <label class="btn btn-secondary active" onclick="changeLR('LR');">
 	    <input type="radio" name="LR" id="LR1" autocomplete="off" checked>L-R</input>
 	  </label>
@@ -35,7 +35,7 @@
 
 	<h2 class="text-dark">Select Frequency</h2>
 
-	<div id="frequencyList" class="btn-group-vertical btn-group-toggle w-0" data-toggle="buttons">
+	<div id="frequencyList" class="btn-group-vertical btn-group-toggle w-50 m-2" data-toggle="buttons">
 	</div>
 
 	<script>
@@ -46,23 +46,47 @@
 		var LR = "LR";
 		var playstatus = false;
 
+		var splitter = null;
+		var merger = null;
+		var gainL = null;
+		var gainR = null;
+
 		function start() {
 			if (playstatus === false) {
 				acx = new AudioContext();
 				osc = acx.createOscillator();
+
+				acx.createGain = acx.createGain || acx.createGainNode;
+
+				splitter = acx.createChannelSplitter(2);  // The number of splitted channels
+				merger = acx.createChannelMerger(2);  // The number of merged channels
+				gainL = acx.createGain();  // for Left  Channel
+				gainR = acx.createGain();  // for Right Channel
+
+				if (LR === "LR") {
+					gainL.gain.value = 1.0;
+					gainR.gain.value = 1.0;
+				}
+				else if (LR === "L") {
+					gainL.gain.value = 1.0;
+					gainR.gain.value = 0.0;
+				}
+				else {
+					gainL.gain.value = 0.0;
+					gainR.gain.value = 1.0;
+				}
+
+				osc.connect(splitter);         // OscillatorNode (Monaural input) -> Stereo
+
+				splitter.connect(gainL, 0, 0);        // ChannelSplitterNode -> GainNode (Left  Channel)
+				splitter.connect(gainR, 0, 0);        // ChannelSplitterNode -> GainNode (Right Channel)
+				gainL.connect(merger, 0, 0);          // GainNode (Left  Channel) -> ChannelMergerNode (Left  Channel)
+				gainR.connect(merger, 0, 1);          // GainNode (Right Channel) => ChannelMergerNode (Right Channel)
+				merger.connect(acx.destination);  // ChannelMergerNode -> AudioDestinationNode (Output)
+
+
 				osc.type="sine";
 				osc.frequency.value = frec;
-
-
-				// var splitter = acx.createChannelSplitter(2);
-				// var merger = acx.createChannelMerger(2);
-				// var gain = acx.createGain();
-				// gain.value = 0;
-				// splitter.connect(gain, 0)
-				// acx.destination.channelCount = 2;
-
-
-				osc.connect(acx.destination);
 				osc.start();
 
 
@@ -179,11 +203,11 @@
 			child_label.setAttribute("onclick", "changeFrec("+ value + ");");
 
 			if (value != frec) {
-				child_label.setAttribute("class", "btn btn-info");
+				child_label.setAttribute("class", "btn btn-info mb-2");
 			}
 			else {
 				child_input.setAttribute("checked", null);
-				child_label.setAttribute("class", "btn btn-info active");
+				child_label.setAttribute("class", "btn btn-info mb-2 active");
 			}
 
 			child_label.appendChild(child_input);
