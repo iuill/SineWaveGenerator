@@ -10,33 +10,89 @@
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 </head>
 <body>
+	<header class="sticky-top">
 	<div class="btn-group btn-group-toggle w-25" data-toggle="buttons">
-	  <label class="btn btn-secondary" onclick="start()">
+	  <label class="btn btn btn-primary" onclick="start()">
 	    <input type="radio" name="playstatus" id="playstatus1" autocomplete="off">Start</input>
 	  </label>
-	  <label class="btn btn-secondary active" onclick="stop()">
+	  <label class="btn btn btn-primary active" onclick="stop()">
 	    <input type="radio" name="playstatus" id="playstatus2" autocomplete="off" checked>Stop</input>
 	  </label>
 	</div>
 
 	<div class="btn-group btn-group-toggle w-25" data-toggle="buttons">
-	  <label class="btn btn-secondary active">
+	  <label class="btn btn-secondary active" onclick="changeLR('LR');">
 	    <input type="radio" name="LR" id="LR1" autocomplete="off" checked>L-R</input>
 	  </label>
-	  <label class="btn btn-secondary">
+	  <label class="btn btn-secondary" onclick="changeLR('L');">
 	    <input type="radio" name="LR" id="LR2" autocomplete="off">L</input>
 	  </label>
-	  <label class="btn btn-secondary">
+	  <label class="btn btn-secondary" onclick="changeLR('R');">
 	    <input type="radio" name="LR" id="LR3" autocomplete="off">R</input>
 	  </label>
 	</div>
+	</header>
 
-	<form>
-		<fieldset id="frequencyList">
-			<legend>Select Frequency</legend>
-		</fieldset>
-	</form>
+	<h2 class="text-dark">Select Frequency</h2>
 
+	<div id="frequencyList" class="btn-group-vertical btn-group-toggle w-0" data-toggle="buttons">
+	</div>
+
+	<script>
+		var AudioContext = window.AudioContext || window.webkitAudioContext;
+		var acx = null;
+		var osc = null;
+		var frec = 250;
+		var LR = "LR";
+		var playstatus = false;
+
+		function start() {
+			if (playstatus === false) {
+				acx = new AudioContext();
+				osc = acx.createOscillator();
+				osc.type="sine";
+				osc.frequency.value = frec;
+
+
+				// var splitter = acx.createChannelSplitter(2);
+				// var merger = acx.createChannelMerger(2);
+				// var gain = acx.createGain();
+				// gain.value = 0;
+				// splitter.connect(gain, 0)
+				// acx.destination.channelCount = 2;
+
+
+				osc.connect(acx.destination);
+				osc.start();
+
+
+				playstatus = true;
+			}
+		}
+		function stop() {
+			if(playstatus === true) {
+				osc.stop();
+				osc = null;
+				playstatus = false;
+			}
+		}
+		function changeFrec(val) {
+			frec = val;
+
+			if(playstatus === true) {
+				stop();
+				start();
+			}
+		}
+		function changeLR(val) {
+			LR = val;
+			
+			if(playstatus === true) {
+				stop();
+				start();
+			}
+		}
+	</script>
 	<script>
 		var elem = document.getElementById("frequencyList");
 
@@ -112,43 +168,32 @@
 		];
 
 		frecs.forEach(function(value) {
-			var child_p = document.createElement("p");
 			var child_label = document.createElement("label");
 			var child_input = document.createElement("input");
-
 			var child_text = document.createTextNode(value + " Hz");
 
 			child_input.setAttribute("type", "radio");
 			child_input.setAttribute("name", "freqency");
-			child_input.setAttribute("value", String(value));
+			child_input.setAttribute("autocomplete", "off");
+
+			child_label.setAttribute("onclick", "changeFrec("+ value + ");");
+
+			if (value != frec) {
+				child_label.setAttribute("class", "btn btn-info");
+			}
+			else {
+				child_input.setAttribute("checked", null);
+				child_label.setAttribute("class", "btn btn-info active");
+			}
 
 			child_label.appendChild(child_input);
 			child_label.appendChild(child_text);
 
-			child_p.appendChild(child_label);
-			elem.appendChild(child_p);
+			elem.appendChild(child_label);
 		});
 	</script>
-	<script>
-		var AudioContext = window.AudioContext || window.webkitAudioContext;
-		var acx = null;
-		var osc = null;
 
-		function start() {
-			if (osc === null) {
-				acx = new AudioContext();
-				osc = acx.createOscillator();
-				osc.connect(acx.destination);
-				osc.type="sine";
-				osc.frequency.value = 1000;
-				osc.start();
-			}
-		}
-		function stop() {
-			osc.stop();
-			osc = null;
-		}
-	</script>
+
 
 	<!-- Optional JavaScript -->
 	<!-- jQuery first, then Popper.js, then Bootstrap JS -->
