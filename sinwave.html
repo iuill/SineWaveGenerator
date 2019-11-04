@@ -53,7 +53,10 @@
 
 		function start() {
 			if (playstatus === false) {
-				acx = new AudioContext();
+				if (acx === null) {
+					acx = new AudioContext();
+				}
+				
 				osc = acx.createOscillator();
 
 				acx.createGain = acx.createGain || acx.createGainNode;
