@@ -1,36 +1,52 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-	<title>HTML5サンプル</title>
+	<title>Sin波 生成ツール</title>
 
 	<!-- Bootstrap CSS -->
-	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+		integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 </head>
+
 <body>
-	<header class="sticky-top">
-	<div class="btn-group btn-group-toggle w-50 m-2" data-toggle="buttons">
-	  <label class="btn btn btn-primary" onclick="start()">
-	    <input type="radio" name="playstatus" id="playstatus1" autocomplete="off">Start</input>
-	  </label>
-	  <label class="btn btn btn-primary active" onclick="stop()">
-	    <input type="radio" name="playstatus" id="playstatus2" autocomplete="off" checked>Stop</input>
-	  </label>
-	</div>
-	<br/>
-	<div class="btn-group btn-group-toggle w-50 m-2" data-toggle="buttons">
-	  <label class="btn btn-secondary active" onclick="changeLR('LR');">
-	    <input type="radio" name="LR" id="LR1" autocomplete="off" checked>L-R</input>
-	  </label>
-	  <label class="btn btn-secondary" onclick="changeLR('L');">
-	    <input type="radio" name="LR" id="LR2" autocomplete="off">L</input>
-	  </label>
-	  <label class="btn btn-secondary" onclick="changeLR('R');">
-	    <input type="radio" name="LR" id="LR3" autocomplete="off">R</input>
-	  </label>
-	</div>
+	<header class="sticky-top" style="background-color: aliceblue;">
+		<h1>Sin波 生成ツール</h1>
+		<div class="btn-group btn-group-toggle w-50 ml-2 mt-1 mb-1" data-toggle="buttons">
+			<label class="btn btn btn-primary" onclick="start()">
+				<input type="radio" name="playstatus" id="playstatus1" autocomplete="off">Start</input>
+			</label>
+			<label class="btn btn btn-primary active" onclick="stop()">
+				<input type="radio" name="playstatus" id="playstatus2" autocomplete="off" checked>Stop</input>
+			</label>
+		</div>
+
+		<br />
+
+		<div class="btn-group btn-group-toggle w-50 ml-2 mt-1 mb-1" data-toggle="buttons">
+			<label class="btn btn-secondary active" onclick="changeLR('LR');">
+				<input type="radio" name="LR" id="LR1" autocomplete="off" checked>L-R</input>
+			</label>
+			<label class="btn btn-secondary" onclick="changeLR('L');">
+				<input type="radio" name="LR" id="LR2" autocomplete="off">L</input>
+			</label>
+			<label class="btn btn-secondary" onclick="changeLR('R');">
+				<input type="radio" name="LR" id="LR3" autocomplete="off">R</input>
+			</label>
+		</div>
+
+		<br />
+
+		<!-- <div class="form-group"> -->
+		<div class="form-group w-50 ml-2 mt-1 mb-2">
+			<label for="gainRange" id="gainLabel">Gain: 1.00</label>
+			<input type="range" class="custom-range" min="0" max="1.0" step="0.05" value="1.0" id="gainRange"
+				onchange="changeGain();"></input>
+		</div>
+		<!-- </div> -->
 	</header>
 
 	<h2 class="text-dark">Select Frequency</h2>
@@ -45,6 +61,8 @@
 		var acx = null;
 		var osc = null;
 		var frec = 250;
+		var gainVal = 1.0;
+		var gainLabel = "Gain: ";
 		var LR = "LR";
 		var playstatus = false;
 
@@ -69,16 +87,16 @@
 				gainR = acx.createGain();  // for Right Channel
 
 				if (LR === "LR") {
-					gainL.gain.value = 1.0;
-					gainR.gain.value = 1.0;
+					gainL.gain.value = gainVal;
+					gainR.gain.value = gainVal;
 				}
 				else if (LR === "L") {
-					gainL.gain.value = 1.0;
+					gainL.gain.value = gainVal;
 					gainR.gain.value = 0.0;
 				}
 				else {
 					gainL.gain.value = 0.0;
-					gainR.gain.value = 1.0;
+					gainR.gain.value = gainVal;
 				}
 
 				osc.connect(splitter);         // OscillatorNode (Monaural input) -> Stereo
@@ -90,7 +108,7 @@
 				merger.connect(acx.destination);  // ChannelMergerNode -> AudioDestinationNode (Output)
 
 
-				osc.type="sine";
+				osc.type = "sine";
 				osc.frequency.value = frec;
 				osc.start();
 
@@ -99,7 +117,7 @@
 			}
 		}
 		function stop() {
-			if(playstatus === true) {
+			if (playstatus === true) {
 				osc.stop();
 				osc = null;
 				playstatus = false;
@@ -108,15 +126,25 @@
 		function changeFrec(val) {
 			frec = val;
 
-			if(playstatus === true) {
+			if (playstatus === true) {
 				stop();
 				start();
 			}
 		}
 		function changeLR(val) {
 			LR = val;
-			
-			if(playstatus === true) {
+
+			if (playstatus === true) {
+				stop();
+				start();
+			}
+		}
+		function changeGain() {
+			gainVal = document.getElementById("gainRange").value;
+
+			document.getElementById("gainLabel").textContent = gainLabel + parseFloat(gainVal).toFixed(2);
+
+			if (playstatus === true) {
 				stop();
 				start();
 			}
@@ -196,7 +224,7 @@
 			"8000"
 		];
 
-		frecs.forEach(function(value) {
+		frecs.forEach(function (value) {
 			var child_label = document.createElement("label");
 			var child_input = document.createElement("input");
 			var child_text = document.createTextNode(value + " Hz");
@@ -205,7 +233,7 @@
 			child_input.setAttribute("name", "freqency");
 			child_input.setAttribute("autocomplete", "off");
 
-			child_label.setAttribute("onclick", "changeFrec("+ value + ");");
+			child_label.setAttribute("onclick", "changeFrec(" + value + ");");
 
 			if (value != frec) {
 				child_label.setAttribute("class", "btn btn-info mb-2");
@@ -226,8 +254,15 @@
 
 	<!-- Optional JavaScript -->
 	<!-- jQuery first, then Popper.js, then Bootstrap JS -->
-	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+		integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+		crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+		integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+		crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+		integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+		crossorigin="anonymous"></script>
 </body>
+
 </html>
