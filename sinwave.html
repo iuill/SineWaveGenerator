@@ -123,31 +123,28 @@
 				playstatus = false;
 			}
 		}
-		function changeFrec(val) {
-			frec = val;
-
+		function restart() {
 			if (playstatus === true) {
 				stop();
 				start();
 			}
 		}
+		function changeFrec(val) {
+			frec = val;
+
+			restart();
+		}
 		function changeLR(val) {
 			LR = val;
 
-			if (playstatus === true) {
-				stop();
-				start();
-			}
+			restart();
 		}
 		function changeGain() {
 			gainVal = document.getElementById("gainRange").value;
 
 			document.getElementById("gainLabel").textContent = gainLabel + parseFloat(gainVal).toFixed(2);
 
-			if (playstatus === true) {
-				stop();
-				start();
-			}
+			restart();
 		}
 	</script>
 	<script>
