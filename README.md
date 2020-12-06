@@ -9,4 +9,4 @@ PCやスマホのブラウザで正弦波音声を出力可能。
 
 ## スクリーンショット
 
-![アプリ画面イメージ](https://github.com/iuill/SineWaveGenerator/blob/images/img.png)
+![アプリ画面イメージ](https://github.com/iuill/images/blob/main/SineWaveGenerator/img.png)
