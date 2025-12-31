@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<title>Audio Wave Generator</title>
+
+	<!-- Tailwind CSS CDN -->
+	<script src="https://cdn.tailwindcss.com"></script>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+	<style>
+		:root {
+			--ink: #0f172a;
+			--accent: #0891b2;
+			--accent-strong: #0e7490;
+			--panel: #ffffff;
+			--mist: #f1f5f9;
+		}
+		body {
+			font-family: "Space Grotesk", "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", sans-serif;
+			color: var(--ink);
+			background:
+				radial-gradient(1200px 600px at 5% -10%, rgba(8, 145, 178, 0.15), transparent 55%),
+				radial-gradient(900px 500px at 95% 0%, rgba(14, 116, 144, 0.15), transparent 60%),
+				linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+		}
+		.glass-panel {
+			background: rgba(255, 255, 255, 0.9);
+			border: 1px solid rgba(148, 163, 184, 0.35);
+			box-shadow: 0 20px 50px rgba(15, 23, 42, 0.12);
+			backdrop-filter: blur(14px);
+		}
+	</style>
+</head>
+
+<body class="min-h-screen">
+	<header class="sticky top-0 z-10">
+		<div class="glass-panel mx-4 mt-4 rounded-2xl px-6 py-5">
+			<div class="flex flex-col gap-4">
+				<div>
+					<h1 class="text-3xl font-semibold">Audio Wave Generator</h1>
+				</div>
+				<div class="grid gap-4 lg:grid-cols-4">
+					<div>
+						<div class="flex gap-1">
+							<label class="flex-1 text-center py-2 px-4 rounded-l font-semibold bg-cyan-600 text-white shadow-sm cursor-pointer hover:bg-cyan-500 transition" onclick="start()" id="startBtn">
+								<input type="radio" name="playstatus" id="playstatus1" autocomplete="off" class="hidden">Start
+							</label>
+							<label class="flex-1 text-center py-2 px-4 rounded-r font-semibold bg-cyan-800 text-white shadow-sm cursor-pointer hover:bg-cyan-700 transition" onclick="stop()" id="stopBtn">
+								<input type="radio" name="playstatus" id="playstatus2" autocomplete="off" checked class="hidden">Stop
+							</label>
+						</div>
+					</div>
+					<div>
+						<div class="flex gap-1">
+							<label class="flex-1 text-center py-2 px-4 rounded-l font-semibold bg-slate-700 text-white cursor-pointer hover:bg-slate-600 transition" onclick="changeLR('LR');" id="lrBtnLR">
+								<input type="radio" name="LR" id="LR1" autocomplete="off" checked class="hidden">L-R
+							</label>
+							<label class="flex-1 text-center py-2 px-4 font-semibold bg-slate-600 text-white cursor-pointer hover:bg-slate-500 transition" onclick="changeLR('L');" id="lrBtnL">
+								<input type="radio" name="LR" id="LR2" autocomplete="off" class="hidden">L
+							</label>
+							<label class="flex-1 text-center py-2 px-4 rounded-r font-semibold bg-slate-600 text-white cursor-pointer hover:bg-slate-500 transition" onclick="changeLR('R');" id="lrBtnR">
+								<input type="radio" name="LR" id="LR3" autocomplete="off" class="hidden">R
+							</label>
+						</div>
+					</div>
+					<div>
+						<label for="gainRange" id="gainLabel" class="block mb-2 text-sm text-slate-700">Gain: 1.00</label>
+						<input type="range" class="w-full h-2 bg-slate-200 rounded-full accent-cyan-600 cursor-pointer" min="0" max="1.0" step="0.05" value="1.0" id="gainRange"
+							onchange="changeGain();">
+					</div>
+					<div class="lg:col-span-2">
+						<div class="grid grid-cols-2 md:grid-cols-4 gap-1">
+							<label class="text-center py-2 px-4 rounded-l font-semibold bg-emerald-700 text-white cursor-pointer hover:bg-emerald-600 transition" onclick="changeWave('sine');" id="waveBtnSine">
+								<input type="radio" name="waveform" id="waveform1" autocomplete="off" checked class="hidden">正弦波
+							</label>
+							<label class="text-center py-2 px-4 font-semibold bg-emerald-600 text-white cursor-pointer hover:bg-emerald-500 transition" onclick="changeWave('square');" id="waveBtnSquare">
+								<input type="radio" name="waveform" id="waveform2" autocomplete="off" class="hidden">方形波
+							</label>
+							<label class="text-center py-2 px-4 font-semibold bg-emerald-600 text-white cursor-pointer hover:bg-emerald-500 transition" onclick="changeWave('triangle');" id="waveBtnTriangle">
+								<input type="radio" name="waveform" id="waveform3" autocomplete="off" class="hidden">三角波
+							</label>
+							<label class="text-center py-2 px-4 rounded-r font-semibold bg-emerald-600 text-white cursor-pointer hover:bg-emerald-500 transition" onclick="changeWave('sawtooth');" id="waveBtnSawtooth">
+								<input type="radio" name="waveform" id="waveform4" autocomplete="off" class="hidden">ノコギリ波
+							</label>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</header>
+
+	<main class="max-w-6xl mx-auto px-6 pb-10">
+		<h2 class="text-xl font-semibold text-slate-800 mt-6 mb-4">Select Frequency</h2>
+
+		<div id="frequencyList" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+		</div>
+	</main>
+
+	<script>
+		// ref: 多チャンネル信号の分離(splitter)/合成(merger)
+		// https://tomari.org/main/java/Sample/top5.php#splitter
+		var AudioContext = window.AudioContext || window.webkitAudioContext;
+		var acx = null;
+		var osc = null;
+		var freq = 250;
+		var gainVal = 1.0;
+		var gainLabel = "Gain: ";
+		var LR = "LR";
+		var playstatus = false;
+		var waveType = "sine";
+
+		var splitter = null;
+		var merger = null;
+		var gainL = null;
+		var gainR = null;
+
+		function updatePlayButtons() {
+			var startBtn = document.getElementById("startBtn");
+			var stopBtn = document.getElementById("stopBtn");
+			var startActive = "flex-1 text-center py-2 px-4 rounded-l font-semibold bg-cyan-700 text-white shadow-sm cursor-pointer hover:bg-cyan-600 transition";
+			var startInactive = "flex-1 text-center py-2 px-4 rounded-l font-semibold bg-cyan-500 text-white shadow-sm cursor-pointer hover:bg-cyan-400 transition";
+			var stopActive = "flex-1 text-center py-2 px-4 rounded-r font-semibold bg-cyan-800 text-white shadow-sm cursor-pointer hover:bg-cyan-700 transition";
+			var stopInactive = "flex-1 text-center py-2 px-4 rounded-r font-semibold bg-cyan-600 text-white shadow-sm cursor-pointer hover:bg-cyan-500 transition";
+			if (playstatus) {
+				startBtn.className = startActive;
+				stopBtn.className = stopInactive;
+			} else {
+				startBtn.className = startInactive;
+				stopBtn.className = stopActive;
+			}
+		}
+
+		function updateLRButtons() {
+			var lrBtnLR = document.getElementById("lrBtnLR");
+			var lrBtnL = document.getElementById("lrBtnL");
+			var lrBtnR = document.getElementById("lrBtnR");
+			var activeClass = "flex-1 text-center py-2 px-4 font-semibold bg-slate-800 text-white cursor-pointer hover:bg-slate-700 transition";
+			var inactiveClass = "flex-1 text-center py-2 px-4 font-semibold bg-slate-600 text-white cursor-pointer hover:bg-slate-500 transition";
+
+			lrBtnLR.className = (LR === "LR" ? activeClass : inactiveClass) + " rounded-l";
+			lrBtnL.className = LR === "L" ? activeClass : inactiveClass;
+			lrBtnR.className = (LR === "R" ? activeClass : inactiveClass) + " rounded-r";
+		}
+
+		function updateWaveButtons() {
+			var waveBtnSine = document.getElementById("waveBtnSine");
+			var waveBtnSquare = document.getElementById("waveBtnSquare");
+			var waveBtnTriangle = document.getElementById("waveBtnTriangle");
+			var waveBtnSawtooth = document.getElementById("waveBtnSawtooth");
+			var activeClass = "text-center py-2 px-4 font-semibold bg-emerald-800 text-white cursor-pointer hover:bg-emerald-700 transition";
+			var inactiveClass = "text-center py-2 px-4 font-semibold bg-emerald-600 text-white cursor-pointer hover:bg-emerald-500 transition";
+
+			waveBtnSine.className = (waveType === "sine" ? activeClass : inactiveClass) + " rounded-l";
+			waveBtnSquare.className = (waveType === "square" ? activeClass : inactiveClass);
+			waveBtnTriangle.className = (waveType === "triangle" ? activeClass : inactiveClass);
+			waveBtnSawtooth.className = (waveType === "sawtooth" ? activeClass : inactiveClass) + " rounded-r";
+		}
+
+		function applyWaveform() {
+			if (!osc) {
+				return;
+			}
+			osc.type = waveType;
+		}
+
+		function start() {
+			if (playstatus === false) {
+				if (acx === null) {
+					acx = new AudioContext();
+				}
+
+				osc = acx.createOscillator();
+
+				acx.createGain = acx.createGain || acx.createGainNode;
+
+				splitter = acx.createChannelSplitter(2);  // The number of split channels
+				merger = acx.createChannelMerger(2);  // The number of merged channels
+				gainL = acx.createGain();  // for Left  Channel
+				gainR = acx.createGain();  // for Right Channel
+
+				if (LR === "LR") {
+					gainL.gain.value = gainVal;
+					gainR.gain.value = gainVal;
+				}
+				else if (LR === "L") {
+					gainL.gain.value = gainVal;
+					gainR.gain.value = 0.0;
+				}
+				else {
+					gainL.gain.value = 0.0;
+					gainR.gain.value = gainVal;
+				}
+
+				osc.connect(splitter);         // OscillatorNode (Monaural input) -> Stereo
+
+				splitter.connect(gainL, 0, 0);        // ChannelSplitterNode -> GainNode (Left  Channel)
+				splitter.connect(gainR, 0, 0);        // ChannelSplitterNode -> GainNode (Right Channel)
+				gainL.connect(merger, 0, 0);          // GainNode (Left  Channel) -> ChannelMergerNode (Left  Channel)
+				gainR.connect(merger, 0, 1);          // GainNode (Right Channel) => ChannelMergerNode (Right Channel)
+				merger.connect(acx.destination);  // ChannelMergerNode -> AudioDestinationNode (Output)
+
+
+				applyWaveform();
+				osc.frequency.value = freq;
+				osc.start();
+
+				playstatus = true;
+				updatePlayButtons();
+			}
+		}
+		function stop() {
+			if (playstatus === true) {
+				osc.stop();
+				osc = null;
+				playstatus = false;
+				updatePlayButtons();
+			}
+		}
+		function restart() {
+			if (playstatus === true) {
+				stop();
+				start();
+			}
+		}
+		function updateFreqButtons(val) {
+			var buttons = document.querySelectorAll("#frequencyList label");
+			buttons.forEach(function(btn) {
+				var freq = btn.textContent.replace(" Hz", "");
+				if (freq == val) {
+					btn.className = "text-center py-2 px-4 rounded-full border border-cyan-700 bg-cyan-700 text-white shadow cursor-pointer hover:bg-cyan-600 transition";
+				} else {
+					btn.className = "text-center py-2 px-4 rounded-full border border-cyan-600/40 bg-white/70 text-cyan-900 shadow-sm cursor-pointer hover:bg-cyan-50 transition";
+				}
+			});
+		}
+
+		function changeFreq(val) {
+			freq = val;
+			updateFreqButtons(val);
+			restart();
+		}
+		function changeLR(val) {
+			LR = val;
+			updateLRButtons();
+			restart();
+		}
+		function changeGain() {
+			gainVal = document.getElementById("gainRange").value;
+
+			document.getElementById("gainLabel").textContent = gainLabel + parseFloat(gainVal).toFixed(2);
+
+			restart();
+		}
+
+		function changeWave(val) {
+			waveType = val;
+			updateWaveButtons();
+			restart();
+		}
+	</script>
+	<script>
+		var elem = document.getElementById("frequencyList");
+
+		var freqs = [
+			"25",
+			"50",
+			"75",
+			"100",
+			"125",
+			"150",
+			"175",
+			"200",
+			"225",
+			"250",
+			"275",
+			"300",
+			"325",
+			"350",
+			"375",
+			"400",
+			"425",
+			"450",
+			"475",
+			"500",
+			"525",
+			"550",
+			"575",
+			"600",
+			"625",
+			"650",
+			"675",
+			"700",
+			"725",
+			"750",
+			"775",
+			"800",
+			"825",
+			"850",
+			"875",
+			"900",
+			"925",
+			"950",
+			"975",
+			"1000",
+			"1250",
+			"1500",
+			"1750",
+			"2000",
+			"2250",
+			"2500",
+			"2750",
+			"3000",
+			"3250",
+			"3500",
+			"3750",
+			"4000",
+			"4250",
+			"4500",
+			"4750",
+			"5000",
+			"5250",
+			"5500",
+			"5750",
+			"6000",
+			"6250",
+			"6500",
+			"6750",
+			"7000",
+			"7250",
+			"7500",
+			"7750",
+			"8000"
+		];
+
+		freqs.forEach(function (value) {
+			var child_label = document.createElement("label");
+			var child_input = document.createElement("input");
+			var child_text = document.createTextNode(value + " Hz");
+
+			child_input.setAttribute("type", "radio");
+			child_input.setAttribute("name", "frequency");
+			child_input.setAttribute("autocomplete", "off");
+			child_input.setAttribute("class", "sr-only");
+
+			child_label.setAttribute("onclick", "changeFreq(" + value + ");");
+
+			if (value != freq) {
+				child_label.setAttribute("class", "text-center py-2 px-4 rounded-full border border-cyan-600/40 bg-white/70 text-cyan-900 shadow-sm cursor-pointer hover:bg-cyan-50 transition");
+			}
+			else {
+				child_input.setAttribute("checked", null);
+				child_label.setAttribute("class", "text-center py-2 px-4 rounded-full border border-cyan-700 bg-cyan-700 text-white shadow cursor-pointer hover:bg-cyan-600 transition");
+			}
+
+			child_label.appendChild(child_input);
+			child_label.appendChild(child_text);
+
+			elem.appendChild(child_label);
+		});
+	</script>
+
+
+
+</body>
+
+</html>

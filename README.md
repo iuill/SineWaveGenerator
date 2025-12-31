@@ -1,6 +1,6 @@
-# Sine Wave Generator
+# Audio Wave Generator
 
-PCやスマホのブラウザで正弦波音声を出力可能。
+PCやスマホのブラウザで各種波形の音声を出力可能。
 
 * 左右それぞれのON/OFF切替
 * 音量変更
