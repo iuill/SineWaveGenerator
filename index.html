@@ -57,7 +57,7 @@
 					</div>
 					<div>
 						<div class="flex gap-1">
-							<label class="flex-1 text-center py-2 px-4 rounded-l font-semibold bg-slate-700 text-white cursor-pointer hover:bg-slate-600 transition" onclick="changeLR('LR');" id="lrBtnLR">
+							<label class="flex-1 text-center py-2 px-4 rounded-l font-semibold bg-slate-800 text-white cursor-pointer hover:bg-slate-700 transition" onclick="changeLR('LR');" id="lrBtnLR">
 								<input type="radio" name="LR" id="LR1" autocomplete="off" checked class="hidden">L-R
 							</label>
 							<label class="flex-1 text-center py-2 px-4 font-semibold bg-slate-600 text-white cursor-pointer hover:bg-slate-500 transition" onclick="changeLR('L');" id="lrBtnL">
@@ -75,7 +75,7 @@
 					</div>
 					<div class="lg:col-span-2">
 						<div class="grid grid-cols-2 md:grid-cols-4 gap-1">
-							<label class="text-center py-2 px-4 rounded-l font-semibold bg-emerald-700 text-white cursor-pointer hover:bg-emerald-600 transition" onclick="changeWave('sine');" id="waveBtnSine">
+							<label class="text-center py-2 px-4 rounded-l font-semibold bg-emerald-800 text-white cursor-pointer hover:bg-emerald-700 transition" onclick="changeWave('sine');" id="waveBtnSine">
 								<input type="radio" name="waveform" id="waveform1" autocomplete="off" checked class="hidden">正弦波
 							</label>
 							<label class="text-center py-2 px-4 font-semibold bg-emerald-600 text-white cursor-pointer hover:bg-emerald-500 transition" onclick="changeWave('square');" id="waveBtnSquare">
@@ -122,8 +122,8 @@
 		function updatePlayButtons() {
 			var startBtn = document.getElementById("startBtn");
 			var stopBtn = document.getElementById("stopBtn");
-			var startActive = "flex-1 text-center py-2 px-4 rounded-l font-semibold bg-cyan-700 text-white shadow-sm cursor-pointer hover:bg-cyan-600 transition";
-			var startInactive = "flex-1 text-center py-2 px-4 rounded-l font-semibold bg-cyan-500 text-white shadow-sm cursor-pointer hover:bg-cyan-400 transition";
+			var startActive = "flex-1 text-center py-2 px-4 rounded-l font-semibold bg-cyan-800 text-white shadow-sm cursor-pointer hover:bg-cyan-700 transition";
+			var startInactive = "flex-1 text-center py-2 px-4 rounded-l font-semibold bg-cyan-600 text-white shadow-sm cursor-pointer hover:bg-cyan-500 transition";
 			var stopActive = "flex-1 text-center py-2 px-4 rounded-r font-semibold bg-cyan-800 text-white shadow-sm cursor-pointer hover:bg-cyan-700 transition";
 			var stopInactive = "flex-1 text-center py-2 px-4 rounded-r font-semibold bg-cyan-600 text-white shadow-sm cursor-pointer hover:bg-cyan-500 transition";
 			if (playstatus) {
