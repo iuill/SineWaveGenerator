@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 
 <head>
 	<meta charset="UTF-8">
@@ -46,47 +46,46 @@
 				</div>
 				<div class="grid gap-4 lg:grid-cols-4">
 					<div>
-						<div class="flex gap-1">
-							<label class="flex-1 text-center py-2 px-4 rounded-l font-semibold bg-cyan-600 text-white shadow-sm cursor-pointer hover:bg-cyan-500 transition" onclick="start()" id="startBtn">
-								<input type="radio" name="playstatus" id="playstatus1" autocomplete="off" class="hidden">Start
-							</label>
-							<label class="flex-1 text-center py-2 px-4 rounded-r font-semibold bg-cyan-800 text-white shadow-sm cursor-pointer hover:bg-cyan-700 transition" onclick="stop()" id="stopBtn">
-								<input type="radio" name="playstatus" id="playstatus2" autocomplete="off" checked class="hidden">Stop
-							</label>
+						<div class="flex gap-1" role="group" aria-label="再生コントロール">
+							<button type="button" class="flex-1 text-center py-2 px-4 rounded-l font-semibold bg-cyan-600 text-white shadow-sm cursor-pointer hover:bg-cyan-500 transition" id="startBtn" aria-pressed="false">
+								Start
+							</button>
+							<button type="button" class="flex-1 text-center py-2 px-4 rounded-r font-semibold bg-cyan-800 text-white shadow-sm cursor-pointer hover:bg-cyan-700 transition" id="stopBtn" aria-pressed="true">
+								Stop
+							</button>
 						</div>
 					</div>
 					<div>
-						<div class="flex gap-1">
-							<label class="flex-1 text-center py-2 px-4 rounded-l font-semibold bg-slate-800 text-white cursor-pointer hover:bg-slate-700 transition" onclick="changeLR('LR');" id="lrBtnLR">
-								<input type="radio" name="LR" id="LR1" autocomplete="off" checked class="hidden">L-R
-							</label>
-							<label class="flex-1 text-center py-2 px-4 font-semibold bg-slate-600 text-white cursor-pointer hover:bg-slate-500 transition" onclick="changeLR('L');" id="lrBtnL">
-								<input type="radio" name="LR" id="LR2" autocomplete="off" class="hidden">L
-							</label>
-							<label class="flex-1 text-center py-2 px-4 rounded-r font-semibold bg-slate-600 text-white cursor-pointer hover:bg-slate-500 transition" onclick="changeLR('R');" id="lrBtnR">
-								<input type="radio" name="LR" id="LR3" autocomplete="off" class="hidden">R
-							</label>
+						<div class="flex gap-1" role="group" aria-label="チャンネル選択">
+							<button type="button" class="flex-1 text-center py-2 px-4 rounded-l font-semibold bg-slate-800 text-white cursor-pointer hover:bg-slate-700 transition" id="lrBtnLR" aria-pressed="true">
+								L-R
+							</button>
+							<button type="button" class="flex-1 text-center py-2 px-4 font-semibold bg-slate-600 text-white cursor-pointer hover:bg-slate-500 transition" id="lrBtnL" aria-pressed="false">
+								L
+							</button>
+							<button type="button" class="flex-1 text-center py-2 px-4 rounded-r font-semibold bg-slate-600 text-white cursor-pointer hover:bg-slate-500 transition" id="lrBtnR" aria-pressed="false">
+								R
+							</button>
 						</div>
 					</div>
 					<div>
 						<label for="gainRange" id="gainLabel" class="block mb-2 text-sm text-slate-700">Gain: 1.00</label>
-						<input type="range" class="w-full h-2 bg-slate-200 rounded-full accent-cyan-600 cursor-pointer" min="0" max="1.0" step="0.05" value="1.0" id="gainRange"
-							onchange="changeGain();">
+						<input type="range" class="w-full h-2 bg-slate-200 rounded-full accent-cyan-600 cursor-pointer" min="0" max="1.0" step="0.05" value="1.0" id="gainRange" aria-describedby="gainLabel">
 					</div>
 					<div class="lg:col-span-2">
-						<div class="grid grid-cols-2 md:grid-cols-4 gap-1">
-							<label class="text-center py-2 px-4 rounded-l font-semibold bg-emerald-800 text-white cursor-pointer hover:bg-emerald-700 transition" onclick="changeWave('sine');" id="waveBtnSine">
-								<input type="radio" name="waveform" id="waveform1" autocomplete="off" checked class="hidden">正弦波
-							</label>
-							<label class="text-center py-2 px-4 font-semibold bg-emerald-600 text-white cursor-pointer hover:bg-emerald-500 transition" onclick="changeWave('square');" id="waveBtnSquare">
-								<input type="radio" name="waveform" id="waveform2" autocomplete="off" class="hidden">方形波
-							</label>
-							<label class="text-center py-2 px-4 font-semibold bg-emerald-600 text-white cursor-pointer hover:bg-emerald-500 transition" onclick="changeWave('triangle');" id="waveBtnTriangle">
-								<input type="radio" name="waveform" id="waveform3" autocomplete="off" class="hidden">三角波
-							</label>
-							<label class="text-center py-2 px-4 rounded-r font-semibold bg-emerald-600 text-white cursor-pointer hover:bg-emerald-500 transition" onclick="changeWave('sawtooth');" id="waveBtnSawtooth">
-								<input type="radio" name="waveform" id="waveform4" autocomplete="off" class="hidden">ノコギリ波
-							</label>
+						<div class="grid grid-cols-2 md:grid-cols-4 gap-1" role="group" aria-label="波形選択">
+							<button type="button" class="text-center py-2 px-4 rounded-l font-semibold bg-emerald-800 text-white cursor-pointer hover:bg-emerald-700 transition" id="waveBtnSine" aria-pressed="true">
+								正弦波
+							</button>
+							<button type="button" class="text-center py-2 px-4 font-semibold bg-emerald-600 text-white cursor-pointer hover:bg-emerald-500 transition" id="waveBtnSquare" aria-pressed="false">
+								方形波
+							</button>
+							<button type="button" class="text-center py-2 px-4 font-semibold bg-emerald-600 text-white cursor-pointer hover:bg-emerald-500 transition" id="waveBtnTriangle" aria-pressed="false">
+								三角波
+							</button>
+							<button type="button" class="text-center py-2 px-4 rounded-r font-semibold bg-emerald-600 text-white cursor-pointer hover:bg-emerald-500 transition" id="waveBtnSawtooth" aria-pressed="false">
+								ノコギリ波
+							</button>
 						</div>
 					</div>
 				</div>
@@ -97,275 +96,410 @@
 	<main class="max-w-6xl mx-auto px-6 pb-10">
 		<h2 class="text-xl font-semibold text-slate-800 mt-6 mb-4">Select Frequency</h2>
 
-		<div id="frequencyList" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+		<div id="frequencyList" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3" role="group" aria-label="周波数選択">
 		</div>
 	</main>
 
 	<script>
-		// ref: 多チャンネル信号の分離(splitter)/合成(merger)
-		// https://tomari.org/main/java/Sample/top5.php#splitter
-		var AudioContext = window.AudioContext || window.webkitAudioContext;
-		var acx = null;
-		var osc = null;
-		var freq = 250;
-		var gainVal = 1.0;
-		var gainLabel = "Gain: ";
-		var LR = "LR";
-		var playstatus = false;
-		var waveType = "sine";
+		// Audio Wave Generator - モジュールパターンでカプセル化
+		const AudioGenerator = (() => {
+			'use strict';
 
-		var splitter = null;
-		var merger = null;
-		var gainL = null;
-		var gainR = null;
-
-		function updatePlayButtons() {
-			var startBtn = document.getElementById("startBtn");
-			var stopBtn = document.getElementById("stopBtn");
-			var startActive = "flex-1 text-center py-2 px-4 rounded-l font-semibold bg-cyan-800 text-white shadow-sm cursor-pointer hover:bg-cyan-700 transition";
-			var startInactive = "flex-1 text-center py-2 px-4 rounded-l font-semibold bg-cyan-600 text-white shadow-sm cursor-pointer hover:bg-cyan-500 transition";
-			var stopActive = "flex-1 text-center py-2 px-4 rounded-r font-semibold bg-cyan-800 text-white shadow-sm cursor-pointer hover:bg-cyan-700 transition";
-			var stopInactive = "flex-1 text-center py-2 px-4 rounded-r font-semibold bg-cyan-600 text-white shadow-sm cursor-pointer hover:bg-cyan-500 transition";
-			if (playstatus) {
-				startBtn.className = startActive;
-				stopBtn.className = stopInactive;
-			} else {
-				startBtn.className = startInactive;
-				stopBtn.className = stopActive;
-			}
-		}
-
-		function updateLRButtons() {
-			var lrBtnLR = document.getElementById("lrBtnLR");
-			var lrBtnL = document.getElementById("lrBtnL");
-			var lrBtnR = document.getElementById("lrBtnR");
-			var activeClass = "flex-1 text-center py-2 px-4 font-semibold bg-slate-800 text-white cursor-pointer hover:bg-slate-700 transition";
-			var inactiveClass = "flex-1 text-center py-2 px-4 font-semibold bg-slate-600 text-white cursor-pointer hover:bg-slate-500 transition";
-
-			lrBtnLR.className = (LR === "LR" ? activeClass : inactiveClass) + " rounded-l";
-			lrBtnL.className = LR === "L" ? activeClass : inactiveClass;
-			lrBtnR.className = (LR === "R" ? activeClass : inactiveClass) + " rounded-r";
-		}
-
-		function updateWaveButtons() {
-			var waveBtnSine = document.getElementById("waveBtnSine");
-			var waveBtnSquare = document.getElementById("waveBtnSquare");
-			var waveBtnTriangle = document.getElementById("waveBtnTriangle");
-			var waveBtnSawtooth = document.getElementById("waveBtnSawtooth");
-			var activeClass = "text-center py-2 px-4 font-semibold bg-emerald-800 text-white cursor-pointer hover:bg-emerald-700 transition";
-			var inactiveClass = "text-center py-2 px-4 font-semibold bg-emerald-600 text-white cursor-pointer hover:bg-emerald-500 transition";
-
-			waveBtnSine.className = (waveType === "sine" ? activeClass : inactiveClass) + " rounded-l";
-			waveBtnSquare.className = (waveType === "square" ? activeClass : inactiveClass);
-			waveBtnTriangle.className = (waveType === "triangle" ? activeClass : inactiveClass);
-			waveBtnSawtooth.className = (waveType === "sawtooth" ? activeClass : inactiveClass) + " rounded-r";
-		}
-
-		function applyWaveform() {
-			if (!osc) {
-				return;
-			}
-			osc.type = waveType;
-		}
-
-		function start() {
-			if (playstatus === false) {
-				if (acx === null) {
-					acx = new AudioContext();
+			// CSS クラス定義（重複を排除）
+			const CSS_CLASSES = {
+				play: {
+					active: 'flex-1 text-center py-2 px-4 font-semibold bg-cyan-800 text-white shadow-sm cursor-pointer hover:bg-cyan-700 transition',
+					inactive: 'flex-1 text-center py-2 px-4 font-semibold bg-cyan-600 text-white shadow-sm cursor-pointer hover:bg-cyan-500 transition'
+				},
+				lr: {
+					active: 'flex-1 text-center py-2 px-4 font-semibold bg-slate-800 text-white cursor-pointer hover:bg-slate-700 transition',
+					inactive: 'flex-1 text-center py-2 px-4 font-semibold bg-slate-600 text-white cursor-pointer hover:bg-slate-500 transition'
+				},
+				wave: {
+					active: 'text-center py-2 px-4 font-semibold bg-emerald-800 text-white cursor-pointer hover:bg-emerald-700 transition',
+					inactive: 'text-center py-2 px-4 font-semibold bg-emerald-600 text-white cursor-pointer hover:bg-emerald-500 transition'
+				},
+				freq: {
+					active: 'text-center py-2 px-4 rounded-full border border-cyan-700 bg-cyan-700 text-white shadow cursor-pointer hover:bg-cyan-600 transition',
+					inactive: 'text-center py-2 px-4 rounded-full border border-cyan-600/40 bg-white/70 text-cyan-900 shadow-sm cursor-pointer hover:bg-cyan-50 transition'
 				}
+			};
 
-				osc = acx.createOscillator();
+			// 状態管理
+			const state = {
+				acx: null,
+				osc: null,
+				freq: 250,
+				gainVal: 1.0,
+				lr: 'LR',
+				playstatus: false,
+				waveType: 'sine',
+				splitter: null,
+				merger: null,
+				gainL: null,
+				gainR: null
+			};
 
-				acx.createGain = acx.createGain || acx.createGainNode;
+			// DOM要素のキャッシュ
+			let elements = {};
 
-				splitter = acx.createChannelSplitter(2);  // The number of split channels
-				merger = acx.createChannelMerger(2);  // The number of merged channels
-				gainL = acx.createGain();  // for Left  Channel
-				gainR = acx.createGain();  // for Right Channel
+			// 周波数リスト
+			const FREQUENCIES = [
+				25, 50, 75, 100, 125, 150, 175, 200, 225, 250,
+				275, 300, 325, 350, 375, 400, 425, 450, 475, 500,
+				525, 550, 575, 600, 625, 650, 675, 700, 725, 750,
+				775, 800, 825, 850, 875, 900, 925, 950, 975, 1000,
+				1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000,
+				3250, 3500, 3750, 4000, 4250, 4500, 4750, 5000,
+				5250, 5500, 5750, 6000, 6250, 6500, 6750, 7000,
+				7250, 7500, 7750, 8000
+			];
 
-				if (LR === "LR") {
-					gainL.gain.value = gainVal;
-					gainR.gain.value = gainVal;
-				}
-				else if (LR === "L") {
-					gainL.gain.value = gainVal;
-					gainR.gain.value = 0.0;
-				}
-				else {
-					gainL.gain.value = 0.0;
-					gainR.gain.value = gainVal;
-				}
-
-				osc.connect(splitter);         // OscillatorNode (Monaural input) -> Stereo
-
-				splitter.connect(gainL, 0, 0);        // ChannelSplitterNode -> GainNode (Left  Channel)
-				splitter.connect(gainR, 0, 0);        // ChannelSplitterNode -> GainNode (Right Channel)
-				gainL.connect(merger, 0, 0);          // GainNode (Left  Channel) -> ChannelMergerNode (Left  Channel)
-				gainR.connect(merger, 0, 1);          // GainNode (Right Channel) => ChannelMergerNode (Right Channel)
-				merger.connect(acx.destination);  // ChannelMergerNode -> AudioDestinationNode (Output)
-
-
-				applyWaveform();
-				osc.frequency.value = freq;
-				osc.start();
-
-				playstatus = true;
-				updatePlayButtons();
+			/**
+			 * DOM要素をキャッシュする
+			 */
+			function cacheElements() {
+				elements = {
+					startBtn: document.getElementById('startBtn'),
+					stopBtn: document.getElementById('stopBtn'),
+					lrBtnLR: document.getElementById('lrBtnLR'),
+					lrBtnL: document.getElementById('lrBtnL'),
+					lrBtnR: document.getElementById('lrBtnR'),
+					gainRange: document.getElementById('gainRange'),
+					gainLabel: document.getElementById('gainLabel'),
+					waveBtnSine: document.getElementById('waveBtnSine'),
+					waveBtnSquare: document.getElementById('waveBtnSquare'),
+					waveBtnTriangle: document.getElementById('waveBtnTriangle'),
+					waveBtnSawtooth: document.getElementById('waveBtnSawtooth'),
+					frequencyList: document.getElementById('frequencyList')
+				};
 			}
-		}
-		function stop() {
-			if (playstatus === true) {
-				osc.stop();
-				osc = null;
-				playstatus = false;
-				updatePlayButtons();
-			}
-		}
-		function restart() {
-			if (playstatus === true) {
-				stop();
-				start();
-			}
-		}
-		function updateFreqButtons(val) {
-			var buttons = document.querySelectorAll("#frequencyList label");
-			buttons.forEach(function(btn) {
-				var freq = btn.textContent.replace(" Hz", "");
-				if (freq == val) {
-					btn.className = "text-center py-2 px-4 rounded-full border border-cyan-700 bg-cyan-700 text-white shadow cursor-pointer hover:bg-cyan-600 transition";
+
+			/**
+			 * 再生ボタンの状態を更新
+			 */
+			function updatePlayButtons() {
+				const { startBtn, stopBtn } = elements;
+				if (state.playstatus) {
+					startBtn.className = CSS_CLASSES.play.active + ' rounded-l';
+					stopBtn.className = CSS_CLASSES.play.inactive + ' rounded-r';
+					startBtn.setAttribute('aria-pressed', 'true');
+					stopBtn.setAttribute('aria-pressed', 'false');
 				} else {
-					btn.className = "text-center py-2 px-4 rounded-full border border-cyan-600/40 bg-white/70 text-cyan-900 shadow-sm cursor-pointer hover:bg-cyan-50 transition";
+					startBtn.className = CSS_CLASSES.play.inactive + ' rounded-l';
+					stopBtn.className = CSS_CLASSES.play.active + ' rounded-r';
+					startBtn.setAttribute('aria-pressed', 'false');
+					stopBtn.setAttribute('aria-pressed', 'true');
 				}
-			});
-		}
-
-		function changeFreq(val) {
-			freq = val;
-			updateFreqButtons(val);
-			restart();
-		}
-		function changeLR(val) {
-			LR = val;
-			updateLRButtons();
-			restart();
-		}
-		function changeGain() {
-			gainVal = document.getElementById("gainRange").value;
-
-			document.getElementById("gainLabel").textContent = gainLabel + parseFloat(gainVal).toFixed(2);
-
-			restart();
-		}
-
-		function changeWave(val) {
-			waveType = val;
-			updateWaveButtons();
-			restart();
-		}
-	</script>
-	<script>
-		var elem = document.getElementById("frequencyList");
-
-		var freqs = [
-			"25",
-			"50",
-			"75",
-			"100",
-			"125",
-			"150",
-			"175",
-			"200",
-			"225",
-			"250",
-			"275",
-			"300",
-			"325",
-			"350",
-			"375",
-			"400",
-			"425",
-			"450",
-			"475",
-			"500",
-			"525",
-			"550",
-			"575",
-			"600",
-			"625",
-			"650",
-			"675",
-			"700",
-			"725",
-			"750",
-			"775",
-			"800",
-			"825",
-			"850",
-			"875",
-			"900",
-			"925",
-			"950",
-			"975",
-			"1000",
-			"1250",
-			"1500",
-			"1750",
-			"2000",
-			"2250",
-			"2500",
-			"2750",
-			"3000",
-			"3250",
-			"3500",
-			"3750",
-			"4000",
-			"4250",
-			"4500",
-			"4750",
-			"5000",
-			"5250",
-			"5500",
-			"5750",
-			"6000",
-			"6250",
-			"6500",
-			"6750",
-			"7000",
-			"7250",
-			"7500",
-			"7750",
-			"8000"
-		];
-
-		freqs.forEach(function (value) {
-			var child_label = document.createElement("label");
-			var child_input = document.createElement("input");
-			var child_text = document.createTextNode(value + " Hz");
-
-			child_input.setAttribute("type", "radio");
-			child_input.setAttribute("name", "frequency");
-			child_input.setAttribute("autocomplete", "off");
-			child_input.setAttribute("class", "sr-only");
-
-			child_label.setAttribute("onclick", "changeFreq(" + value + ");");
-
-			if (value != freq) {
-				child_label.setAttribute("class", "text-center py-2 px-4 rounded-full border border-cyan-600/40 bg-white/70 text-cyan-900 shadow-sm cursor-pointer hover:bg-cyan-50 transition");
-			}
-			else {
-				child_input.setAttribute("checked", null);
-				child_label.setAttribute("class", "text-center py-2 px-4 rounded-full border border-cyan-700 bg-cyan-700 text-white shadow cursor-pointer hover:bg-cyan-600 transition");
 			}
 
-			child_label.appendChild(child_input);
-			child_label.appendChild(child_text);
+			/**
+			 * L/Rボタンの状態を更新
+			 */
+			function updateLRButtons() {
+				const { lrBtnLR, lrBtnL, lrBtnR } = elements;
+				const { active, inactive } = CSS_CLASSES.lr;
 
-			elem.appendChild(child_label);
-		});
+				lrBtnLR.className = (state.lr === 'LR' ? active : inactive) + ' rounded-l';
+				lrBtnL.className = state.lr === 'L' ? active : inactive;
+				lrBtnR.className = (state.lr === 'R' ? active : inactive) + ' rounded-r';
+
+				lrBtnLR.setAttribute('aria-pressed', state.lr === 'LR' ? 'true' : 'false');
+				lrBtnL.setAttribute('aria-pressed', state.lr === 'L' ? 'true' : 'false');
+				lrBtnR.setAttribute('aria-pressed', state.lr === 'R' ? 'true' : 'false');
+			}
+
+			/**
+			 * 波形ボタンの状態を更新
+			 */
+			function updateWaveButtons() {
+				const { waveBtnSine, waveBtnSquare, waveBtnTriangle, waveBtnSawtooth } = elements;
+				const { active, inactive } = CSS_CLASSES.wave;
+
+				waveBtnSine.className = (state.waveType === 'sine' ? active : inactive) + ' rounded-l';
+				waveBtnSquare.className = state.waveType === 'square' ? active : inactive;
+				waveBtnTriangle.className = state.waveType === 'triangle' ? active : inactive;
+				waveBtnSawtooth.className = (state.waveType === 'sawtooth' ? active : inactive) + ' rounded-r';
+
+				waveBtnSine.setAttribute('aria-pressed', state.waveType === 'sine' ? 'true' : 'false');
+				waveBtnSquare.setAttribute('aria-pressed', state.waveType === 'square' ? 'true' : 'false');
+				waveBtnTriangle.setAttribute('aria-pressed', state.waveType === 'triangle' ? 'true' : 'false');
+				waveBtnSawtooth.setAttribute('aria-pressed', state.waveType === 'sawtooth' ? 'true' : 'false');
+			}
+
+			/**
+			 * 周波数ボタンの状態を更新
+			 */
+			function updateFreqButtons() {
+				const buttons = elements.frequencyList.querySelectorAll('button');
+				const { active, inactive } = CSS_CLASSES.freq;
+
+				buttons.forEach((btn) => {
+					const freqValue = parseInt(btn.dataset.freq, 10);
+					if (freqValue === state.freq) {
+						btn.className = active;
+						btn.setAttribute('aria-pressed', 'true');
+					} else {
+						btn.className = inactive;
+						btn.setAttribute('aria-pressed', 'false');
+					}
+				});
+			}
+
+			/**
+			 * 波形を適用
+			 */
+			function applyWaveform() {
+				if (state.osc) {
+					state.osc.type = state.waveType;
+				}
+			}
+
+			/**
+			 * 再生開始
+			 */
+			async function start() {
+				if (state.playstatus) {
+					return;
+				}
+
+				try {
+					const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+
+					if (!state.acx) {
+						state.acx = new AudioContextClass();
+					}
+
+					// AudioContextがサスペンド状態の場合は再開
+					if (state.acx.state === 'suspended') {
+						await state.acx.resume();
+					}
+
+					state.osc = state.acx.createOscillator();
+
+					state.splitter = state.acx.createChannelSplitter(2);
+					state.merger = state.acx.createChannelMerger(2);
+					state.gainL = state.acx.createGain();
+					state.gainR = state.acx.createGain();
+
+					// L/R設定に基づいてゲインを設定
+					switch (state.lr) {
+						case 'LR':
+							state.gainL.gain.value = state.gainVal;
+							state.gainR.gain.value = state.gainVal;
+							break;
+						case 'L':
+							state.gainL.gain.value = state.gainVal;
+							state.gainR.gain.value = 0.0;
+							break;
+						case 'R':
+							state.gainL.gain.value = 0.0;
+							state.gainR.gain.value = state.gainVal;
+							break;
+					}
+
+					// オーディオノードを接続
+					state.osc.connect(state.splitter);
+					state.splitter.connect(state.gainL, 0, 0);
+					state.splitter.connect(state.gainR, 0, 0);
+					state.gainL.connect(state.merger, 0, 0);
+					state.gainR.connect(state.merger, 0, 1);
+					state.merger.connect(state.acx.destination);
+
+					applyWaveform();
+					state.osc.frequency.value = state.freq;
+					state.osc.start();
+
+					state.playstatus = true;
+					updatePlayButtons();
+				} catch (error) {
+					console.error('オーディオの再生に失敗しました:', error);
+					alert('オーディオの再生に失敗しました。ブラウザがWeb Audio APIをサポートしているか確認してください。');
+				}
+			}
+
+			/**
+			 * 再生停止
+			 */
+			function stop() {
+				if (!state.playstatus) {
+					return;
+				}
+
+				try {
+					if (state.osc) {
+						state.osc.stop();
+						state.osc.disconnect();
+						state.osc = null;
+					}
+
+					// ノードを切断
+					if (state.splitter) {
+						state.splitter.disconnect();
+						state.splitter = null;
+					}
+					if (state.merger) {
+						state.merger.disconnect();
+						state.merger = null;
+					}
+					if (state.gainL) {
+						state.gainL.disconnect();
+						state.gainL = null;
+					}
+					if (state.gainR) {
+						state.gainR.disconnect();
+						state.gainR = null;
+					}
+
+					state.playstatus = false;
+					updatePlayButtons();
+				} catch (error) {
+					console.error('オーディオの停止に失敗しました:', error);
+				}
+			}
+
+			/**
+			 * 再起動（設定変更時に使用）
+			 */
+			function restart() {
+				if (state.playstatus) {
+					stop();
+					start();
+				}
+			}
+
+			/**
+			 * 周波数を変更
+			 */
+			function changeFreq(val) {
+				state.freq = val;
+				updateFreqButtons();
+				restart();
+			}
+
+			/**
+			 * L/Rを変更
+			 */
+			function changeLR(val) {
+				state.lr = val;
+				updateLRButtons();
+				restart();
+			}
+
+			/**
+			 * ゲインを変更
+			 */
+			function changeGain() {
+				state.gainVal = parseFloat(elements.gainRange.value);
+				elements.gainLabel.textContent = 'Gain: ' + state.gainVal.toFixed(2);
+				restart();
+			}
+
+			/**
+			 * 波形を変更
+			 */
+			function changeWave(val) {
+				state.waveType = val;
+				updateWaveButtons();
+				restart();
+			}
+
+			/**
+			 * 周波数ボタンを生成
+			 */
+			function createFrequencyButtons() {
+				const container = elements.frequencyList;
+				const fragment = document.createDocumentFragment();
+
+				FREQUENCIES.forEach((freq) => {
+					const button = document.createElement('button');
+					button.type = 'button';
+					button.dataset.freq = freq;
+					button.textContent = freq + ' Hz';
+
+					if (freq === state.freq) {
+						button.className = CSS_CLASSES.freq.active;
+						button.setAttribute('aria-pressed', 'true');
+					} else {
+						button.className = CSS_CLASSES.freq.inactive;
+						button.setAttribute('aria-pressed', 'false');
+					}
+
+					button.addEventListener('click', () => changeFreq(freq));
+					fragment.appendChild(button);
+				});
+
+				container.appendChild(fragment);
+			}
+
+			/**
+			 * イベントリスナーを設定
+			 */
+			function setupEventListeners() {
+				// 再生コントロール
+				elements.startBtn.addEventListener('click', start);
+				elements.stopBtn.addEventListener('click', stop);
+
+				// L/Rボタン
+				elements.lrBtnLR.addEventListener('click', () => changeLR('LR'));
+				elements.lrBtnL.addEventListener('click', () => changeLR('L'));
+				elements.lrBtnR.addEventListener('click', () => changeLR('R'));
+
+				// ゲインスライダー
+				elements.gainRange.addEventListener('input', changeGain);
+
+				// 波形ボタン
+				elements.waveBtnSine.addEventListener('click', () => changeWave('sine'));
+				elements.waveBtnSquare.addEventListener('click', () => changeWave('square'));
+				elements.waveBtnTriangle.addEventListener('click', () => changeWave('triangle'));
+				elements.waveBtnSawtooth.addEventListener('click', () => changeWave('sawtooth'));
+
+				// キーボードショートカット
+				document.addEventListener('keydown', (e) => {
+					// スペースキーで再生/停止をトグル
+					if (e.code === 'Space' && e.target === document.body) {
+						e.preventDefault();
+						if (state.playstatus) {
+							stop();
+						} else {
+							start();
+						}
+					}
+					// Escapeで停止
+					if (e.code === 'Escape') {
+						stop();
+					}
+				});
+			}
+
+			/**
+			 * 初期化
+			 */
+			function init() {
+				cacheElements();
+				createFrequencyButtons();
+				setupEventListeners();
+			}
+
+			// DOMContentLoadedで初期化
+			if (document.readyState === 'loading') {
+				document.addEventListener('DOMContentLoaded', init);
+			} else {
+				init();
+			}
+
+			// 公開API（デバッグ用）
+			return {
+				start,
+				stop,
+				changeFreq,
+				changeLR,
+				changeGain,
+				changeWave,
+				getState: () => ({ ...state })
+			};
+		})();
 	</script>
-
-
-
 </body>
 
 </html>
