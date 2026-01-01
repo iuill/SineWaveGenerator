@@ -6,7 +6,6 @@ PCやスマホのブラウザで各種波形の音声を出力可能。
 * 音量変更
 * 周波数変更
 
-
 ## スクリーンショット
 
-![アプリ画面イメージ](https://github.com/iuill/images/blob/main/SineWaveGenerator/img.png)
+![アプリ画面イメージ](assets/screenshots/app.jpg)
