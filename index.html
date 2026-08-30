@@ -645,6 +645,7 @@
 		.segmented { display: flex; gap: .35rem; flex-wrap: wrap; }
 		.segmented .btn[aria-pressed="true"] { border-color: var(--teal); color: white; background: var(--teal); }
 		.generator-actions { display: flex; gap: .55rem; margin-top: 1.2rem; }
+		#generatorStartBtn[aria-pressed="true"] { border-color: var(--teal-dark); background: var(--teal-dark); box-shadow: 0 0 0 3px rgba(8,127,121,.18); }
 
 		.frequency-heading {
 			display: flex;
@@ -767,22 +768,22 @@
 					<div class="section-heading">
 						<div>
 							<h2>3つの音域 × 3つの入力レベル</h2>
-							<p class="helper" id="measurementProfileSummary">補聴器の入力レベル設定に相当する差で、左・右を聞き比べます。</p>
+							<p class="helper">補聴器調整の50 / 65 / 80 dB入力に相当するレベル差で、左・右を聞き比べます。</p>
 						</div>
 						<span class="progress-text" id="progressText">0 / 9 記録</span>
 					</div>
 
 					<div class="calibration" id="calibrationPanel">
 						<h3>最初に、音量を確認します</h3>
-						<p class="helper" id="calibrationProfileHelp"></p>
+						<p class="helper">80 dB入力相当の基準を、左右のうち<strong>大きく聞こえる側でも、はっきり聞こえて不快ではない音量</strong>に合わせます。50 dB相当が聞こえにくくても、基準を上げすぎないでください。</p>
 						<div class="level-explanation" aria-label="3段階の音量">
-							<div class="level-chip" id="lowInputChip"></div>
-							<div class="level-chip" id="mediumInputChip"></div>
-							<div class="level-chip" id="highInputChip"></div>
+							<div class="level-chip"><strong>50 dB相当</strong><span>基準より −30 dB</span></div>
+							<div class="level-chip"><strong>65 dB相当</strong><span>基準より −15 dB</span></div>
+							<div class="level-chip"><strong>80 dB相当</strong><span>基準レベル</span></div>
 						</div>
 						<div class="volume-block">
 							<div class="range-row">
-								<label for="baseVolume"><strong id="baseVolumeLabel"></strong></label>
+								<label for="baseVolume"><strong>80 dB入力相当の基準レベル</strong></label>
 								<output id="baseVolumeOutput" for="baseVolume">音量レベル 10%</output>
 							</div>
 							<input id="baseVolume" type="range" min="2" max="100" step="1" value="10">
@@ -792,14 +793,14 @@
 							<span aria-hidden="true"></span>
 							<span class="preview-grid-head">左右交互</span>
 							<span class="preview-grid-head">左右同時</span>
-							<span class="preview-label" id="highPreviewLabel"></span>
+							<span class="preview-label">80 dB相当</span>
 							<button class="btn" id="previewVolumeBtn" type="button" aria-label="80 dB入力相当を左右交互に再生"><span aria-hidden="true">▶</span> 再生</button>
 							<button class="btn" id="previewBothBtn" type="button" aria-label="80 dB入力相当を左右同時に再生"><span aria-hidden="true">▶</span> 再生</button>
 							<span class="preview-label" id="lowPreviewLabel">50 dB相当</span>
 							<button class="btn" id="previewSmallBtn" type="button" aria-label="50 dB入力相当を左右交互に再生"><span aria-hidden="true">▶</span> 再生</button>
 							<button class="btn" id="previewSmallBothBtn" type="button" aria-label="50 dB入力相当を左右同時に再生"><span aria-hidden="true">▶</span> 再生</button>
 						</div>
-						<p class="notice" id="inputProfileNotice"></p>
+						<p class="notice">※ ブラウザの出力は校正されていないため、実際の50 / 65 / 80 dB SPLではありません。80 dBを基準としたレベル差を再現します。</p>
 						<div class="preview-stop">
 							<button class="btn danger" id="stopPreviewBtn" type="button">■ 停止</button>
 						</div>
@@ -945,6 +946,9 @@
 				<h2 style="margin-top:1.7rem">相談メモ</h2>
 				<p class="helper">測定内容を補聴器のフィッティング画面に近い形式で整理しています。</p>
 				<div class="memo-preview" id="memoPreview" aria-label="相談メモのプレビュー"></div>
+				<div class="action-row">
+					<button class="btn primary" id="copyMemoBtn" type="button">相談メモをコピー</button>
+				</div>
 				<p class="notice">このメモは調整内容を指定するものではなく、感じ方を伝える補助資料です。補聴器の設定変更は専門家に相談してください。</p>
 			</section>
 		</section>
@@ -985,8 +989,8 @@
 					</div>
 				</div>
 				<div class="generator-actions">
-					<button class="btn primary" id="generatorStartBtn" type="button"><span aria-hidden="true">▶</span> 再生</button>
-					<button class="btn danger" id="generatorStopBtn" type="button">■ 停止</button>
+					<button class="btn primary" id="generatorStartBtn" type="button" aria-pressed="false"><span aria-hidden="true">▶</span> 再生</button>
+					<button class="btn danger" id="generatorStopBtn" type="button" disabled>■ 停止</button>
 				</div>
 				<div class="frequency-heading">
 					<div>
@@ -1005,16 +1009,11 @@
 		(() => {
 			'use strict';
 
-			const HIGH_INPUT_DB = 80;
-			function buildInputLevels() {
-				return [50, 65, HIGH_INPUT_DB].map((inputDb, index) => ({
-					level: ['small', 'medium', 'large'][index],
-					levelLabel: `${inputDb} dB入力相当`,
-					inputDb,
-					relativeDb: inputDb - HIGH_INPUT_DB,
-					multiplier: Math.pow(10, (inputDb - HIGH_INPUT_DB) / 20)
-				}));
-			}
+			const INPUT_LEVELS = [
+				{ level: 'small', levelLabel: '50 dB入力相当', inputDb: 50, relativeDb: -30, multiplier: Math.pow(10, -30 / 20) },
+				{ level: 'medium', levelLabel: '65 dB入力相当', inputDb: 65, relativeDb: -15, multiplier: Math.pow(10, -15 / 20) },
+				{ level: 'large', levelLabel: '80 dB入力相当', inputDb: 80, relativeDb: 0, multiplier: 1 }
+			];
 
 			function buildQuickTests(inputLevels) {
 				return [
@@ -1024,7 +1023,6 @@
 				].flatMap((item) => inputLevels.map((level) => ({ ...item, ...level })));
 			}
 
-			const INPUT_LEVELS = buildInputLevels();
 			const TESTS = buildQuickTests(INPUT_LEVELS);
 
 			const DETAIL_RANGES = {
@@ -1082,6 +1080,7 @@
 				let context = null;
 				let active = [];
 				let sequenceId = 0;
+				let requestBalanceDb = 0;
 
 				async function ensureContext() {
 					const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -1111,10 +1110,11 @@
 					});
 				}
 
-				function setGain(gain) {
+				function applyNodeLevel(node, gain, balanceDb) {
 					if (!context) return;
 					const now = context.currentTime;
-					active.forEach(({ leftGain, rightGain, channel, balanceDb }) => {
+					const { leftGain, rightGain, channel, end } = node;
+					try {
 						const leftAttenuation = balanceDb < 0 ? Math.pow(10, balanceDb / 20) : 1;
 						const rightAttenuation = balanceDb > 0 ? Math.pow(10, -balanceDb / 20) : 1;
 						const leftValue = channel === 'right' ? 0 : gain * leftAttenuation;
@@ -1122,11 +1122,29 @@
 						[leftGain, rightGain].forEach((gainNode) => gainNode.gain.cancelScheduledValues(now));
 						leftGain.gain.linearRampToValueAtTime(leftValue, now + .03);
 						rightGain.gain.linearRampToValueAtTime(rightValue, now + .03);
-					});
+						if (end && end > now + .06) {
+							leftGain.gain.setValueAtTime(leftValue, end - .06);
+							rightGain.gain.setValueAtTime(rightValue, end - .06);
+							leftGain.gain.linearRampToValueAtTime(0, end);
+							rightGain.gain.linearRampToValueAtTime(0, end);
+						}
+						node.gain = gain;
+						node.balanceDb = balanceDb;
+					} catch (_) { /* tone already ended */ }
 				}
 
-				function beginRequest() {
+				function setGain(gain) {
+					active.forEach((node) => applyNodeLevel(node, gain, node.balanceDb));
+				}
+
+				function setBalance(balanceDb) {
+					requestBalanceDb = Number(balanceDb) || 0;
+					active.forEach((node) => applyNodeLevel(node, node.gain, requestBalanceDb));
+				}
+
+				function beginRequest(balanceDb = 0) {
 					sequenceId += 1;
+					requestBalanceDb = Number(balanceDb) || 0;
 					clearActiveNodes();
 					return sequenceId;
 				}
@@ -1171,20 +1189,20 @@
 					merger.connect(ac.destination);
 					oscillator.start(now);
 					if (end) oscillator.stop(end + .01);
-					active = [{ oscillator, leftGain, rightGain, merger, channel, balanceDb }];
+					active = [{ oscillator, leftGain, rightGain, merger, channel, balanceDb, gain, end }];
 					return true;
 				}
 
 				async function play(options) {
-					const requestId = beginRequest();
-					return startTone(options, requestId);
+					const requestId = beginRequest(options.balanceDb);
+					return startTone({ ...options, balanceDb: requestBalanceDb }, requestId);
 				}
 
 				async function alternate(options, order = ['left', 'right']) {
-					const requestId = beginRequest();
+					const requestId = beginRequest(options.balanceDb);
 					for (const channel of order) {
 						if (requestId !== sequenceId) return;
-						const started = await startTone({ ...options, channel, duration: 700 }, requestId);
+						const started = await startTone({ ...options, channel, duration: 700, balanceDb: requestBalanceDb }, requestId);
 						if (!started) return;
 						await new Promise((resolve) => setTimeout(resolve, 900));
 						if (requestId !== sequenceId) return;
@@ -1192,7 +1210,7 @@
 					if (requestId === sequenceId) clearActiveNodes();
 				}
 
-				return { play, alternate, stop, setGain };
+				return { play, alternate, stop, setGain, setBalance };
 			})();
 
 			function testKey(test) { return `${test.frequency}-${test.level}`; }
@@ -1265,7 +1283,10 @@
 				}
 			}
 
+			let saveTimer = null;
 			function saveState() {
+				if (saveTimer !== null) clearTimeout(saveTimer);
+				saveTimer = null;
 				if (!state.currentMeasurementId) state.currentMeasurementId = createMeasurementId();
 				state.savedAt = new Date().toISOString();
 				const snapshot = measurementSnapshot();
@@ -1275,19 +1296,20 @@
 				persistMeasurements();
 			}
 
-			function renderInputProfile() {
-				const high = HIGH_INPUT_DB;
-				const [lowLevel, mediumLevel, highLevel] = INPUT_LEVELS;
-				$('#measurementProfileSummary').textContent = `補聴器調整の50 / 65 / ${high} dB入力に相当するレベル差で、左・右を聞き比べます。`;
-				$('#calibrationProfileHelp').innerHTML = `${high} dB入力相当の基準を、左右のうち<strong>大きく聞こえる側でも、はっきり聞こえて不快ではない音量</strong>に合わせます。50 dB相当が聞こえにくくても、基準を上げすぎないでください。`;
-				$('#lowInputChip').innerHTML = `<strong>50 dB相当</strong><span>基準より ${lowLevel.relativeDb} dB</span>`;
-				$('#mediumInputChip').innerHTML = `<strong>65 dB相当</strong><span>基準より ${mediumLevel.relativeDb} dB</span>`;
-				$('#highInputChip').innerHTML = `<strong>${high} dB相当</strong><span>基準レベル</span>`;
-				$('#baseVolumeLabel').textContent = `${high} dB入力相当の基準レベル`;
-				$('#highPreviewLabel').textContent = `${high} dB相当`;
-				$('#previewVolumeBtn').setAttribute('aria-label', `${high} dB入力相当を左右交互に再生`);
-				$('#previewBothBtn').setAttribute('aria-label', `${high} dB入力相当を左右同時に再生`);
-				$('#inputProfileNotice').textContent = `※ ブラウザの出力は校正されていないため、実際の50 / 65 / ${high} dB SPLではありません。${high} dBを基準としたレベル差を再現します。`;
+			function scheduleSaveState() {
+				if (saveTimer !== null) clearTimeout(saveTimer);
+				saveTimer = setTimeout(() => {
+					saveTimer = null;
+					saveState();
+					renderMeasurementHistory();
+				}, 300);
+			}
+
+			function flushScheduledSave() {
+				if (saveTimer === null) return;
+				clearTimeout(saveTimer);
+				saveTimer = null;
+				saveState();
 			}
 
 			function renderRestoreNotice() {
@@ -1411,7 +1433,7 @@
 				const results = activeResults();
 				$('#bandBadge').textContent = state.mode === 'detail' ? '詳' : test.badge;
 				$('#currentTestTitle').textContent = state.mode === 'detail' ? `${test.frequency} Hz・${test.levelLabel}` : `${test.band}・${test.levelLabel}`;
-				const relativeLabel = test.relativeDb === 0 ? `${HIGH_INPUT_DB} dB基準` : `${HIGH_INPUT_DB} dB基準より ${test.relativeDb} dB`;
+				const relativeLabel = test.relativeDb === 0 ? '80 dB基準' : `80 dB基準より ${test.relativeDb} dB`;
 				$('#currentTestDetail').textContent = `${state.currentIndex + 1} / ${tests.length} ・ ${test.frequency} Hz ・ ${relativeLabel}`;
 				$('#stepPosition').textContent = `${state.currentIndex + 1} / ${tests.length}${state.mode === 'detail' ? '（詳細測定）' : ''}`;
 				$('#previousTestBtn').disabled = state.currentIndex === 0;
@@ -1577,19 +1599,19 @@
 				list.innerHTML = '';
 				section.hidden = candidates.length === 0;
 				candidates.forEach((test) => {
-						const frequencies = DETAIL_RANGES[test.frequency];
-						const complete = frequencies.every((detailFrequency) => state.detailResults[`${test.frequency}-${test.inputDb}-${detailFrequency}`]);
-						const button = document.createElement('button');
-						button.type = 'button';
-						button.className = `btn detail-suggestion-btn${complete ? ' completed-detail' : ''}`;
-						button.innerHTML = complete
-							? `${formatFrequency(test.frequency)}・G${test.inputDb}<small>✓ 詳細測定済み・結果を見る</small>`
-							: `${formatFrequency(test.frequency)}・G${test.inputDb}<small>${RATINGS[state.results[testKey(test)].rating]} → 詳しく測る</small>`;
-						button.addEventListener('click', () => {
-							if (complete) $('#resultsTitle').scrollIntoView({ behavior: 'smooth', block: 'start' });
-							else startDetailMeasurement(test.frequency, test.inputDb);
-						});
-						list.appendChild(button);
+					const frequencies = DETAIL_RANGES[test.frequency];
+					const complete = frequencies.every((detailFrequency) => state.detailResults[`${test.frequency}-${test.inputDb}-${detailFrequency}`]);
+					const button = document.createElement('button');
+					button.type = 'button';
+					button.className = `btn detail-suggestion-btn${complete ? ' completed-detail' : ''}`;
+					button.innerHTML = complete
+						? `${formatFrequency(test.frequency)}・G${test.inputDb}<small>✓ 詳細測定済み・結果を見る</small>`
+						: `${formatFrequency(test.frequency)}・G${test.inputDb}<small>${RATINGS[state.results[testKey(test)].rating]} → 詳しく測る</small>`;
+					button.addEventListener('click', () => {
+						if (complete) $('#resultsTitle').scrollIntoView({ behavior: 'smooth', block: 'start' });
+						else startDetailMeasurement(test.frequency, test.inputDb);
+					});
+					list.appendChild(button);
 				});
 			}
 
@@ -1743,7 +1765,6 @@
 				persistMeasurements();
 				$('#balancePanel').hidden = true;
 				syncMeasurementInputs();
-				renderInputProfile();
 				renderAll();
 				showCalibration();
 			}
@@ -1756,7 +1777,6 @@
 				persistMeasurements();
 				$('#balancePanel').hidden = true;
 				syncMeasurementInputs();
-				renderInputProfile();
 				renderAll();
 				showCalibration();
 				$('#resultsTitle').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1764,6 +1784,10 @@
 			}
 
 			function deleteMeasurement(id) {
+				clearAdvanceTimer();
+				AudioEngine.stop();
+				state.balanceTarget = null;
+				$('#balancePanel').hidden = true;
 				const deletingCurrent = id === state.currentMeasurementId;
 				state.measurements = state.measurements.filter((record) => record.id !== id);
 				if (deletingCurrent) {
@@ -1773,7 +1797,6 @@
 					if (!state.measurements.some((record) => record.id === next.id)) state.measurements.push(next);
 					applyMeasurement(next);
 					syncMeasurementInputs();
-					renderInputProfile();
 					showCalibration();
 				}
 				persistMeasurements();
@@ -1838,6 +1861,9 @@
 				$('#completionPanel').hidden = false;
 				if (state.mode === 'detail') {
 					state.detailSession = null;
+					state.mode = 'quick';
+					state.detailTests = [];
+					state.currentIndex = 0;
 					saveState();
 					$('#completionTitle').textContent = '周辺の詳細測定が終わりました';
 					$('#completionMessage').textContent = '詳細結果を相談メモへ追加しました。ほかの候補も続けて測定できます。';
@@ -1917,9 +1943,8 @@
 				$('#baseVolume').value = state.baseVolume;
 				updateRangeProgress($('#baseVolume'));
 				$('#baseVolumeOutput').textContent = `音量レベル ${state.baseVolume}%`;
-				saveState();
+				scheduleSaveState();
 				renderMemoPreview();
-				renderMeasurementHistory();
 			}
 
 			async function previewBaseVolume() {
@@ -1963,8 +1988,8 @@
 				const results = activeResults();
 				const key = activeTestKey(test);
 				results[key] = state.mode === 'detail'
-					? { rating, recordedAt: new Date().toISOString(), anchorFrequency: test.anchorFrequency, inputDb: test.inputDb, frequency: test.frequency }
-					: { rating, recordedAt: new Date().toISOString() };
+					? { rating, anchorFrequency: test.anchorFrequency, inputDb: test.inputDb, frequency: test.frequency }
+					: { rating };
 				saveState();
 				renderAll();
 				if (rating === 'uncomfortable') showToast('記録しました。無理に続けないでください');
@@ -1988,6 +2013,7 @@
 			function setTab(name) {
 				AudioEngine.stop();
 				state.generator.playing = false;
+				renderGeneratorPlaybackState();
 				const measure = name === 'measure';
 				$('#measureTab').setAttribute('aria-selected', measure ? 'true' : 'false');
 				$('#measureTab').tabIndex = measure ? 0 : -1;
@@ -2033,6 +2059,16 @@
 				});
 			}
 
+			function renderGeneratorPlaybackState() {
+				const playing = state.generator.playing;
+				const startButton = $('#generatorStartBtn');
+				startButton.setAttribute('aria-pressed', playing ? 'true' : 'false');
+				startButton.innerHTML = playing
+					? '<span aria-hidden="true">▶</span> 再生中'
+					: '<span aria-hidden="true">▶</span> 再生';
+				$('#generatorStopBtn').disabled = !playing;
+			}
+
 			async function playGenerator() {
 				const frequency = Math.min(8000, Math.max(25, Number($('#generatorFrequency').value) || 500));
 				state.generator.frequency = frequency;
@@ -2040,18 +2076,20 @@
 				updateGeneratorFrequencySelection();
 				const gain = Number($('#generatorGain').value) / 100;
 				try {
-					await AudioEngine.play({ frequency, gain, channel: state.generator.channel, wave: state.generator.wave });
-					state.generator.playing = true;
+					const started = await AudioEngine.play({ frequency, gain, channel: state.generator.channel, wave: state.generator.wave });
+					state.generator.playing = Boolean(started);
 				} catch (error) {
 					state.generator.playing = false;
 					console.error(error);
 					showToast('音声を再生できませんでした');
 				}
+				renderGeneratorPlaybackState();
 			}
 
 			function stopGenerator() {
 				state.generator.playing = false;
 				AudioEngine.stop();
+				renderGeneratorPlaybackState();
 			}
 
 			function selectGeneratorFrequency(frequency) {
@@ -2065,15 +2103,43 @@
 				$(selector).value = state.context[property];
 				$(selector).addEventListener(eventName, (event) => {
 					state.context[property] = event.target.value;
-					saveState();
+					if (eventName === 'input') scheduleSaveState();
+					else saveState();
 					renderMemoPreview();
-					renderMeasurementHistory();
+					if (eventName !== 'input') renderMeasurementHistory();
 				});
+			}
+
+			async function copyMemo() {
+				const text = $('#memoPreview').innerText.trim().replace(/\n{3,}/g, '\n\n');
+				if (!text) {
+					showToast('コピーできる測定結果がありません');
+					return;
+				}
+				try {
+					if (navigator.clipboard && window.isSecureContext) {
+						await navigator.clipboard.writeText(text);
+					} else {
+						const textarea = document.createElement('textarea');
+						textarea.value = text;
+						textarea.setAttribute('readonly', '');
+						textarea.style.position = 'fixed';
+						textarea.style.opacity = '0';
+						document.body.appendChild(textarea);
+						textarea.select();
+						const copied = document.execCommand('copy');
+						textarea.remove();
+						if (!copied) throw new Error('copy command failed');
+					}
+					showToast('相談メモをコピーしました');
+				} catch (error) {
+					console.error(error);
+					showToast('コピーできませんでした');
+				}
 			}
 
 			function init() {
 				loadState();
-				renderInputProfile();
 				$('#baseVolume').value = state.baseVolume;
 				$('#baseVolumeOutput').textContent = `音量レベル ${state.baseVolume}%`;
 				$$('input[type="range"]').forEach((range) => {
@@ -2136,8 +2202,8 @@
 					showToast('1段階下げました。もう一度聞いてください');
 				});
 				$('#balanceRange').addEventListener('input', () => {
-					AudioEngine.stop();
 					renderBalanceValue();
+					AudioEngine.setBalance(Number($('#balanceRange').value));
 				});
 				$('#playBalanceAlternateBtn').addEventListener('click', () => playBalance('alternate'));
 				$('#playBalanceReverseBtn').addEventListener('click', () => playBalance('alternate-reverse'));
@@ -2197,6 +2263,8 @@
 
 				$('#generatorStartBtn').addEventListener('click', playGenerator);
 				$('#generatorStopBtn').addEventListener('click', stopGenerator);
+				$('#copyMemoBtn').addEventListener('click', copyMemo);
+				window.addEventListener('pagehide', flushScheduledSave);
 
 				document.addEventListener('keydown', (event) => {
 					if (event.key === 'Escape') {
