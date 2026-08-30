@@ -519,7 +519,8 @@
 		.merged-results-table th.detail-frequency { color: var(--teal-dark); background: var(--teal-soft); }
 		.frequency-detail-mark { display: block; margin-top: .15rem; font-size: .65rem; font-weight: 700; letter-spacing: 0; }
 		.merged-results-help { margin-top: .65rem; color: var(--teal-dark); font-size: .8rem; }
-		.measurement-history { margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--line); }
+		.measurement-history { margin-bottom: 1.5rem; }
+		.selected-result-section { padding-top: 1.25rem; border-top: 1px solid var(--line); }
 		.measurement-history-list { display: grid; gap: .55rem; margin-top: .75rem; }
 		.measurement-history-item {
 			display: flex;
@@ -926,28 +927,30 @@
 			</div>
 
 			<section class="card results-card" aria-labelledby="resultsTitle">
-				<div class="section-heading">
-					<div>
-						<h2 id="resultsTitle">測定結果</h2>
-						<p class="helper">結果はこの端末のブラウザ内に自動保存されます。</p>
-						<div class="result-status-legend" aria-label="測定状況の色分け">
-							<span class="result-status-key"><span class="result-status-swatch recorded" aria-hidden="true"></span>測定済み</span>
-							<span class="result-status-key"><span class="result-status-swatch empty" aria-hidden="true"></span>未測定</span>
-						</div>
-						<p class="merged-results-help" id="mergedResultsHelp" hidden>詳細測定した周波数を、この表の横軸へ追加しています。</p>
-					</div>
-					<button class="btn small danger" id="clearResultsBtn" type="button">この測定を削除</button>
-				</div>
-				<div class="table-wrap">
-					<table class="merged-results-table" id="resultsTable">
-						<thead><tr id="resultsHeaderRow"><th>入力</th></tr></thead>
-						<tbody id="resultsBody"></tbody>
-					</table>
-				</div>
 				<section class="measurement-history" id="measurementHistory" hidden>
 					<h2>保存した測定</h2>
 					<p class="helper">測定はブラウザ内へ個別に保存されます。過去の結果を表示したり、不要な結果だけ削除できます。</p>
 					<div class="measurement-history-list" id="measurementHistoryList"></div>
+				</section>
+				<section class="selected-result-section">
+					<div class="section-heading">
+						<div>
+							<h2 id="resultsTitle">選択中の測定結果</h2>
+							<p class="helper" id="selectedMeasurementMeta">新しい測定（未保存）</p>
+							<div class="result-status-legend" aria-label="測定状況の色分け">
+								<span class="result-status-key"><span class="result-status-swatch recorded" aria-hidden="true"></span>測定済み</span>
+								<span class="result-status-key"><span class="result-status-swatch empty" aria-hidden="true"></span>未測定</span>
+							</div>
+							<p class="merged-results-help" id="mergedResultsHelp" hidden>詳細測定した周波数を、この表の横軸へ追加しています。</p>
+						</div>
+						<button class="btn small danger" id="clearResultsBtn" type="button">この測定を削除</button>
+					</div>
+					<div class="table-wrap">
+						<table class="merged-results-table" id="resultsTable">
+							<thead><tr id="resultsHeaderRow"><th>入力</th></tr></thead>
+							<tbody id="resultsBody"></tbody>
+						</table>
+					</div>
 				</section>
 				<div class="balance-panel" id="balancePanel" hidden>
 					<div class="section-heading">
@@ -1340,6 +1343,17 @@
 				const records = [...state.measurements]
 					.filter((record) => measurementRecordHasContent(record) || record.id === state.currentMeasurementId)
 					.sort((a, b) => String(b.savedAt || b.createdAt).localeCompare(String(a.savedAt || a.createdAt)));
+				const selectedRecord = state.measurements.find((record) => record.id === state.currentMeasurementId);
+				if (selectedRecord) {
+					const selectedDateValue = selectedRecord.savedAt || selectedRecord.createdAt;
+					const selectedDate = selectedDateValue
+						? new Intl.DateTimeFormat('ja-JP', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(selectedDateValue))
+						: '日時不明';
+					const selectedName = selectedRecord.context?.program ? `${selectedRecord.context.program}・` : '';
+					$('#selectedMeasurementMeta').textContent = `表示中：${selectedName}${selectedDate}（自動保存）`;
+				} else {
+					$('#selectedMeasurementMeta').textContent = '新しい測定（まだ保存項目はありません）';
+				}
 				list.innerHTML = '';
 				section.hidden = records.length === 0;
 				records.forEach((record) => {
