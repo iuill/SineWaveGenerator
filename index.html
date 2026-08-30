@@ -497,6 +497,7 @@
 		.result-recorded { background: #eef8f4; }
 		.result-empty { color: #7f8996; background: #f4f6f8; }
 		.result-alert { color: var(--red); background: #fff0ee; font-weight: 800; }
+		.remeasure-btn { display: block; margin-top: .4rem; font-size: .76rem; }
 		.result-status-legend { display: flex; flex-wrap: wrap; gap: .8rem; margin-top: .5rem; color: var(--muted); font-size: .78rem; }
 		.result-status-key { display: inline-flex; align-items: center; gap: .35rem; }
 		.result-status-swatch { width: .85rem; height: .85rem; border: 1px solid var(--line); border-radius: 3px; }
@@ -911,6 +912,7 @@
 								<span class="result-status-key"><span class="result-status-swatch recorded" aria-hidden="true"></span>測定済み</span>
 								<span class="result-status-key"><span class="result-status-swatch empty" aria-hidden="true"></span>未測定</span>
 							</div>
+							<p class="helper">測定済みの項目は、この表から個別に測り直せます。新しい回答を保存すると、関連するdB差と周辺の詳細結果も更新されます。</p>
 							<p class="merged-results-help" id="mergedResultsHelp" hidden>詳細測定した周波数を、この表の横軸へ追加しています。</p>
 						</div>
 					</div>
@@ -1067,6 +1069,7 @@
 				detailTests: [],
 				detailSession: null,
 				balanceTarget: null,
+				retryTarget: null,
 				context: { program: '', connection: '未記入', deviceVolume: '', note: '' },
 				baseVolume: 10,
 				savedAt: null,
@@ -1249,6 +1252,7 @@
 				state.detailTests = [];
 				state.currentIndex = 0;
 				state.balanceTarget = null;
+				state.retryTarget = null;
 			}
 
 			function persistMeasurements() {
@@ -1435,8 +1439,9 @@
 				$('#currentTestTitle').textContent = state.mode === 'detail' ? `${test.frequency} Hz・${test.levelLabel}` : `${test.band}・${test.levelLabel}`;
 				const relativeLabel = test.relativeDb === 0 ? '80 dB基準' : `80 dB基準より ${test.relativeDb} dB`;
 				$('#currentTestDetail').textContent = `${state.currentIndex + 1} / ${tests.length} ・ ${test.frequency} Hz ・ ${relativeLabel}`;
-				$('#stepPosition').textContent = `${state.currentIndex + 1} / ${tests.length}${state.mode === 'detail' ? '（詳細測定）' : ''}`;
-				$('#previousTestBtn').disabled = state.currentIndex === 0;
+				const retrying = state.retryTarget?.key === activeTestKey(test);
+				$('#stepPosition').textContent = `${state.currentIndex + 1} / ${tests.length}${retrying ? '（測り直し）' : state.mode === 'detail' ? '（詳細測定）' : ''}`;
+				$('#previousTestBtn').disabled = retrying || state.currentIndex === 0;
 				const selected = results[activeTestKey(test)]?.rating;
 				$$('[data-rating]').forEach((button) => {
 					button.classList.toggle('selected', button.dataset.rating === selected);
@@ -1500,6 +1505,7 @@
 						if (result && isSideDifference(result.rating)) {
 							cell.appendChild(createBalanceButton(resultType, resultKey, testForCell, result));
 						}
+						if (result) cell.appendChild(createRemeasureButton(resultType, resultKey, testForCell, result));
 						row.appendChild(cell);
 					});
 					body.appendChild(row);
@@ -1537,6 +1543,16 @@
 				button.className = `btn small balance-measure-btn ${measured ? 'completed' : 'pending'}`;
 				button.textContent = measured ? `目安：${balanceDescription(result.balanceDb)}` : 'dB差を測る';
 				button.addEventListener('click', () => openBalancePanel(type, key, test));
+				return button;
+			}
+
+			function createRemeasureButton(type, key, test, result) {
+				const button = document.createElement('button');
+				button.type = 'button';
+				button.className = 'btn small remeasure-btn';
+				button.textContent = '測り直す';
+				button.setAttribute('aria-label', `${formatFrequency(test.frequency)}・G${test.inputDb}を測り直す`);
+				button.addEventListener('click', () => startRemeasurement(type, key, test, result));
 				return button;
 			}
 
@@ -1810,6 +1826,45 @@
 				advanceTimer = null;
 			}
 
+			function startRemeasurement(type, key, test, result) {
+				const derivedKeys = type === 'quick'
+					? Object.entries(state.detailResults)
+						.filter(([, detail]) => Number(detail.anchorFrequency) === Number(test.frequency) && Number(detail.inputDb) === Number(test.inputDb))
+						.map(([detailResultKey]) => detailResultKey)
+					: [];
+				const affected = [];
+				if (Number.isFinite(result.balanceDb)) affected.push('dB差の目安');
+				if (derivedKeys.length) affected.push(`周辺の詳細結果 ${derivedKeys.length}件`);
+				if (affected.length && !confirm(`新しい回答を保存すると、この項目の${affected.join('と')}を削除します。測り直しますか？`)) return;
+
+				clearAdvanceTimer();
+				AudioEngine.stop();
+				state.balanceTarget = null;
+				$('#balancePanel').hidden = true;
+				state.retryTarget = { type, key, derivedKeys };
+				if (type === 'detail') {
+					state.mode = 'detail';
+					state.detailSession = { anchorFrequency: test.anchorFrequency, inputDb: test.inputDb };
+					state.detailTests = buildDetailTests(test.anchorFrequency, test.inputDb);
+					state.currentIndex = state.detailTests.findIndex((item) => detailKey(item) === key);
+				} else {
+					state.mode = 'quick';
+					state.detailTests = [];
+					state.currentIndex = TESTS.findIndex((item) => testKey(item) === key);
+				}
+				if (state.currentIndex < 0) {
+					state.retryTarget = null;
+					showToast('測り直す項目を開けませんでした');
+					return;
+				}
+				$('#calibrationPanel').hidden = true;
+				$('#completionPanel').hidden = true;
+				$('#testFlow').hidden = false;
+				renderSteps();
+				renderCurrentTest();
+				$('#testFlow').scrollIntoView({ behavior: 'smooth', block: 'start' });
+			}
+
 			function selectTest(index) {
 				clearAdvanceTimer();
 				AudioEngine.stop();
@@ -1829,6 +1884,14 @@
 			function startMeasurementFlow() {
 				clearAdvanceTimer();
 				AudioEngine.stop();
+				if (state.retryTarget) {
+					$('#calibrationPanel').hidden = true;
+					$('#completionPanel').hidden = true;
+					$('#testFlow').hidden = false;
+					renderSteps();
+					renderCurrentTest();
+					return;
+				}
 				if (state.mode === 'detail' && state.detailTests.length) {
 					const firstIncomplete = state.detailTests.findIndex((test) => !state.detailResults[detailKey(test)]);
 					state.currentIndex = firstIncomplete < 0 ? 0 : firstIncomplete;
@@ -1877,6 +1940,7 @@
 			function startDetailMeasurement(anchorFrequency, inputDb) {
 				clearAdvanceTimer();
 				AudioEngine.stop();
+				state.retryTarget = null;
 				state.mode = 'detail';
 				state.detailSession = { anchorFrequency, inputDb };
 				state.detailTests = buildDetailTests(anchorFrequency, inputDb);
@@ -1987,13 +2051,25 @@
 				const test = tests[state.currentIndex];
 				const results = activeResults();
 				const key = activeTestKey(test);
+				const retryTarget = state.retryTarget;
+				let remeasured = false;
+				if (retryTarget?.type === state.mode && retryTarget.key === key) {
+					if (state.mode === 'quick') {
+						retryTarget.derivedKeys.forEach((detailResultKey) => delete state.detailResults[detailResultKey]);
+						if (Number(state.detailSession?.anchorFrequency) === Number(test.frequency) && Number(state.detailSession?.inputDb) === Number(test.inputDb)) {
+							state.detailSession = null;
+						}
+					}
+					state.retryTarget = null;
+					remeasured = true;
+				}
 				results[key] = state.mode === 'detail'
 					? { rating, anchorFrequency: test.anchorFrequency, inputDb: test.inputDb, frequency: test.frequency }
 					: { rating };
 				saveState();
 				renderAll();
-				if (rating === 'uncomfortable') showToast('記録しました。無理に続けないでください');
-				else showToast('記録しました');
+				if (rating === 'uncomfortable') showToast(`${remeasured ? '測り直しました' : '記録しました'}。無理に続けないでください`);
+				else showToast(remeasured ? '測り直した結果を保存しました' : '記録しました');
 
 				const nextIndex = tests.findIndex((item, index) => index > state.currentIndex && !results[state.mode === 'detail' ? detailKey(item) : testKey(item)]);
 				advanceTimer = nextIndex >= 0
