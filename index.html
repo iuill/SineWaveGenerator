@@ -943,7 +943,6 @@
 							</div>
 							<p class="merged-results-help" id="mergedResultsHelp" hidden>詳細測定した周波数を、この表の横軸へ追加しています。</p>
 						</div>
-						<button class="btn small danger" id="clearResultsBtn" type="button">この測定を削除</button>
 					</div>
 					<div class="table-wrap">
 						<table class="merged-results-table" id="resultsTable">
@@ -2247,11 +2246,6 @@
 
 				$('#baseVolume').addEventListener('input', (event) => {
 					setBaseVolume(event.target.value);
-				});
-
-				$('#clearResultsBtn').addEventListener('click', () => {
-					if (!confirm('現在表示している測定記録だけを削除しますか？')) return;
-					deleteMeasurement(state.currentMeasurementId);
 				});
 
 				$('#copyMemoBtn').addEventListener('click', async () => {
