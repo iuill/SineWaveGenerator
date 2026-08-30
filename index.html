@@ -783,10 +783,10 @@
 						<div class="volume-block">
 							<div class="range-row">
 								<label for="baseVolume"><strong id="baseVolumeLabel"></strong></label>
-								<output id="baseVolumeOutput" for="baseVolume">レベル 10 / 100</output>
+								<output id="baseVolumeOutput" for="baseVolume">音量レベル 10%</output>
 							</div>
 							<input id="baseVolume" type="range" min="2" max="100" step="1" value="10">
-							<p class="notice">100はアプリ内の最大振幅です。純音は強く感じることがあるため、低い値から少しずつ上げてください。</p>
+							<p class="notice">100%はアプリ内の最大振幅です。純音は強く感じることがあるため、低い値から少しずつ上げてください。</p>
 						</div>
 						<div class="preview-grid" role="group" aria-label="確認音の再生">
 							<span aria-hidden="true"></span>
@@ -1317,7 +1317,7 @@
 				$('#deviceVolume').value = state.context.deviceVolume;
 				$('#situationNote').value = state.context.note;
 				$('#baseVolume').value = state.baseVolume;
-				$('#baseVolumeOutput').textContent = `レベル ${state.baseVolume} / 100`;
+				$('#baseVolumeOutput').textContent = `音量レベル ${state.baseVolume}%`;
 				updateRangeProgress($('#baseVolume'));
 			}
 
@@ -1680,7 +1680,7 @@
 				const internalGrid = add(internalSection, 'div', 'memo-context-grid');
 				const internalItem = add(internalGrid, 'div', 'memo-context-item');
 				add(internalItem, 'small', '', 'アプリ内の基準出力');
-				add(internalItem, 'strong', '', `レベル ${state.baseVolume} / 100（端末依存・実音圧ではありません）`);
+				add(internalItem, 'strong', '', `音量レベル ${state.baseVolume}%（端末依存・実音圧ではありません）`);
 
 				const findingsSection = section(body, 'アプリ入力側の相対減衰量（dB）');
 				const completedCount = Object.keys(state.results).length;
@@ -1916,7 +1916,7 @@
 				state.baseVolume = Math.min(100, Math.max(2, Number(value)));
 				$('#baseVolume').value = state.baseVolume;
 				updateRangeProgress($('#baseVolume'));
-				$('#baseVolumeOutput').textContent = `レベル ${state.baseVolume} / 100`;
+				$('#baseVolumeOutput').textContent = `音量レベル ${state.baseVolume}%`;
 				saveState();
 				renderMemoPreview();
 				renderMeasurementHistory();
@@ -2075,7 +2075,7 @@
 				loadState();
 				renderInputProfile();
 				$('#baseVolume').value = state.baseVolume;
-				$('#baseVolumeOutput').textContent = `レベル ${state.baseVolume} / 100`;
+				$('#baseVolumeOutput').textContent = `音量レベル ${state.baseVolume}%`;
 				$$('input[type="range"]').forEach((range) => {
 					updateRangeProgress(range);
 					range.addEventListener('input', () => updateRangeProgress(range));
