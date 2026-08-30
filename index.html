@@ -301,13 +301,8 @@
 			text-align: left;
 		}
 
-		.detail-suggestion-table-wrap { overflow-x: auto; margin-top: .75rem; }
-		.detail-suggestion-table { min-width: 560px; table-layout: fixed; }
-		.detail-suggestion-table th, .detail-suggestion-table td { text-align: center; vertical-align: middle; }
-		.detail-suggestion-table th:first-child { width: 4.5rem; }
-		.detail-suggestion-table td:first-child { color: var(--muted); font-weight: 900; }
-		.detail-suggestion-table .not-applicable { color: #a3acb7; background: #f7f8fa; }
-		.detail-suggestion-btn { width: 100%; min-height: 3.7rem; padding: .5rem; text-align: center; }
+		.detail-suggestion-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem; margin-top: .75rem; }
+		.detail-suggestion-btn { width: 100%; min-height: 3.7rem; padding: .5rem; text-align: left; }
 		.detail-suggestion-btn small { display: block; margin-top: .15rem; font-weight: 600; opacity: .78; }
 		.detail-suggestion-btn.completed-detail { border-color: #83c8c1; background: var(--teal-soft); color: var(--teal-dark); }
 
@@ -479,7 +474,7 @@
 		input[type="range"]:focus-visible { outline: 3px solid rgba(8,127,121,.24); outline-offset: 3px; border-radius: 999px; }
 
 		.field { margin-top: 1rem; }
-		.field label { display: block; margin-bottom: .4rem; font-size: .88rem; font-weight: 800; }
+		.field label, .field .control-label { display: block; margin-bottom: .4rem; font-size: .88rem; font-weight: 800; }
 		.field input, .field select, .field textarea {
 			width: 100%;
 			border: 1px solid var(--line);
@@ -534,22 +529,10 @@
 		}
 		.measurement-history-item.current { border-color: #83c8c1; background: var(--teal-soft); }
 		.measurement-history-title { display: block; font-weight: 850; }
+		.measurement-history-context { display: block; margin-top: .25rem; color: var(--ink); font-size: .82rem; }
 		.measurement-history-meta { display: block; margin-top: .15rem; color: var(--muted); font-size: .78rem; }
 		.measurement-history-actions { display: flex; flex: 0 0 auto; gap: .4rem; }
 		.measurement-current-badge { color: var(--teal-dark); font-size: .78rem; font-weight: 850; }
-
-		.memo-area {
-			width: 100%;
-			min-height: 260px;
-			margin-top: 1rem;
-			border: 1px solid var(--line);
-			border-radius: 14px;
-			padding: 1rem;
-			color: var(--ink);
-			background: #fbfcfc;
-			line-height: 1.7;
-			resize: vertical;
-		}
 
 		.memo-preview {
 			margin-top: 1rem;
@@ -655,16 +638,6 @@
 		.fitting-value.needs-measurement { color: var(--amber); font-size: .72rem; }
 		.fitting-caption { margin: .65rem 0 0; color: var(--muted); font-size: .76rem; line-height: 1.5; }
 
-		.memo-text-details {
-			margin-top: .8rem;
-			border: 1px solid var(--line);
-			border-radius: 12px;
-			background: #fbfcfc;
-		}
-
-		.memo-text-details summary { padding: .8rem 1rem; font-weight: 800; cursor: pointer; }
-		.memo-text-details .memo-area { margin: 0; border: 0; border-top: 1px solid var(--line); border-radius: 0; }
-
 		.action-row { display: flex; flex-wrap: wrap; gap: .55rem; margin-top: .75rem; }
 		.notice { margin: .8rem 0 0; color: var(--muted); font-size: .8rem; line-height: 1.55; }
 
@@ -747,6 +720,7 @@
 			.band-badge { width: 58px; height: 58px; }
 			.preview-grid { grid-template-columns: 4.5rem minmax(0, 1fr) minmax(0, 1fr); }
 			.preview-grid .btn { padding-inline: .4rem; }
+			.detail-suggestion-list { grid-template-columns: 1fr; }
 			.memo-context-grid { grid-template-columns: 1fr; }
 			.memo-finding { align-items: flex-start; flex-direction: column; }
 			.memo-finding-value { text-align: left; }
@@ -767,8 +741,8 @@
 
 	<main id="main">
 		<div class="tabs" role="tablist" aria-label="機能選択">
-			<button class="tab" id="generatorTab" role="tab" aria-selected="true" aria-controls="generatorPanel">自由再生</button>
-			<button class="tab" id="measureTab" role="tab" aria-selected="false" aria-controls="measurePanel">かんたん測定（補助）</button>
+			<button class="tab" id="generatorTab" role="tab" tabindex="0" aria-selected="true" aria-controls="generatorPanel">自由再生</button>
+			<button class="tab" id="measureTab" role="tab" tabindex="-1" aria-selected="false" aria-controls="measurePanel">かんたん測定（補助）</button>
 		</div>
 
 		<section class="panel" id="measurePanel" role="tabpanel" aria-labelledby="measureTab" hidden>
@@ -778,7 +752,7 @@
 			</div>
 			<div class="restore-notice" id="restoreNotice" role="status" hidden>
 				<div>
-					<strong>前回の続きから測定できます</strong>
+					<strong id="restoreTitle">前回の続きから測定できます</strong>
 					<span class="restore-meta" id="restoreMeta"></span>
 				</div>
 				<div class="restore-actions">
@@ -885,12 +859,7 @@
 						<div class="detail-suggestions" id="detailSuggestions" hidden>
 							<h3>左右差がある周辺を詳しく測る</h3>
 							<p class="helper">中心は簡易測定の結果を使い、低い側・高い側を1周波数ずつ確認します。</p>
-							<div class="detail-suggestion-table-wrap">
-								<table class="detail-suggestion-table">
-									<thead><tr><th>入力</th><th>500 Hz</th><th>2 kHz</th><th>4 kHz</th></tr></thead>
-									<tbody id="detailSuggestionList"></tbody>
-								</table>
-							</div>
+							<div class="detail-suggestion-list" id="detailSuggestionList"></div>
 						</div>
 						<div class="action-row" style="justify-content:center">
 							<button class="btn primary" id="viewResultsBtn" type="button">結果を見る</button>
@@ -974,16 +943,8 @@
 				</div>
 
 				<h2 style="margin-top:1.7rem">相談メモ</h2>
-				<p class="helper">測定内容を見やすく整理しています。コピーと保存には下のテキスト版を使用します。</p>
+				<p class="helper">測定内容を補聴器のフィッティング画面に近い形式で整理しています。</p>
 				<div class="memo-preview" id="memoPreview" aria-label="相談メモのプレビュー"></div>
-				<details class="memo-text-details">
-					<summary>テキスト版を確認・編集</summary>
-					<textarea class="memo-area" id="memoArea" aria-label="自動生成された相談メモ"></textarea>
-				</details>
-				<div class="action-row">
-					<button class="btn primary" id="copyMemoBtn" type="button">メモをコピー</button>
-					<button class="btn" id="downloadMemoBtn" type="button">テキストで保存</button>
-				</div>
 				<p class="notice">このメモは調整内容を指定するものではなく、感じ方を伝える補助資料です。補聴器の設定変更は専門家に相談してください。</p>
 			</section>
 		</section>
@@ -1006,16 +967,16 @@
 						<input id="generatorGain" type="range" min="0" max="100" step="1" value="5">
 					</div>
 					<div class="field">
-						<label>出力先</label>
-						<div class="segmented" id="channelButtons">
+						<span class="control-label" id="channelButtonsLabel">出力先</span>
+						<div class="segmented" id="channelButtons" role="group" aria-labelledby="channelButtonsLabel">
 							<button class="btn small" type="button" data-channel="both" aria-pressed="true">左右</button>
 							<button class="btn small" type="button" data-channel="left" aria-pressed="false">左</button>
 							<button class="btn small" type="button" data-channel="right" aria-pressed="false">右</button>
 						</div>
 					</div>
 					<div class="field">
-						<label>波形</label>
-						<div class="segmented" id="waveButtons">
+						<span class="control-label" id="waveButtonsLabel">波形</span>
+						<div class="segmented" id="waveButtons" role="group" aria-labelledby="waveButtonsLabel">
 							<button class="btn small" type="button" data-wave="sine" aria-pressed="true">正弦波</button>
 							<button class="btn small" type="button" data-wave="square" aria-pressed="false">方形波</button>
 							<button class="btn small" type="button" data-wave="triangle" aria-pressed="false">三角波</button>
@@ -1044,13 +1005,14 @@
 		(() => {
 			'use strict';
 
-			function buildInputLevels(highInputDb) {
-				return [50, 65, highInputDb].map((inputDb, index) => ({
+			const HIGH_INPUT_DB = 80;
+			function buildInputLevels() {
+				return [50, 65, HIGH_INPUT_DB].map((inputDb, index) => ({
 					level: ['small', 'medium', 'large'][index],
 					levelLabel: `${inputDb} dB入力相当`,
 					inputDb,
-					relativeDb: inputDb - highInputDb,
-					multiplier: Math.pow(10, (inputDb - highInputDb) / 20)
+					relativeDb: inputDb - HIGH_INPUT_DB,
+					multiplier: Math.pow(10, (inputDb - HIGH_INPUT_DB) / 20)
 				}));
 			}
 
@@ -1062,8 +1024,8 @@
 				].flatMap((item) => inputLevels.map((level) => ({ ...item, ...level })));
 			}
 
-			let INPUT_LEVELS = buildInputLevels(80);
-			let TESTS = buildQuickTests(INPUT_LEVELS);
+			const INPUT_LEVELS = buildInputLevels();
+			const TESTS = buildQuickTests(INPUT_LEVELS);
 
 			const DETAIL_RANGES = {
 				500: [375, 750],
@@ -1109,7 +1071,6 @@
 				balanceTarget: null,
 				context: { program: '', connection: '未記入', deviceVolume: '', note: '' },
 				baseVolume: 10,
-				highInputDb: 80,
 				savedAt: null,
 				restoredFromStorage: false,
 				measurements: [],
@@ -1131,13 +1092,37 @@
 				}
 
 				function clearActiveNodes() {
-					active.forEach(({ oscillator, leftGain, rightGain, merger }) => {
-						try { oscillator.stop(); } catch (_) { /* already stopped */ }
-						[oscillator, leftGain, rightGain, merger].forEach((node) => {
-							try { node.disconnect(); } catch (_) { /* already disconnected */ }
-						});
-					});
+					const nodes = active;
 					active = [];
+					const now = context?.currentTime || 0;
+					nodes.forEach(({ oscillator, leftGain, rightGain, merger }) => {
+						[leftGain, rightGain].forEach((gainNode) => {
+							try {
+								gainNode.gain.cancelScheduledValues(now);
+								gainNode.gain.linearRampToValueAtTime(0, now + .015);
+							} catch (_) { /* already stopped */ }
+						});
+						try { oscillator.stop(now + .02); } catch (_) { /* already stopped */ }
+						setTimeout(() => {
+							[oscillator, leftGain, rightGain, merger].forEach((node) => {
+								try { node.disconnect(); } catch (_) { /* already disconnected */ }
+							});
+						}, 30);
+					});
+				}
+
+				function setGain(gain) {
+					if (!context) return;
+					const now = context.currentTime;
+					active.forEach(({ leftGain, rightGain, channel, balanceDb }) => {
+						const leftAttenuation = balanceDb < 0 ? Math.pow(10, balanceDb / 20) : 1;
+						const rightAttenuation = balanceDb > 0 ? Math.pow(10, -balanceDb / 20) : 1;
+						const leftValue = channel === 'right' ? 0 : gain * leftAttenuation;
+						const rightValue = channel === 'left' ? 0 : gain * rightAttenuation;
+						[leftGain, rightGain].forEach((gainNode) => gainNode.gain.cancelScheduledValues(now));
+						leftGain.gain.linearRampToValueAtTime(leftValue, now + .03);
+						rightGain.gain.linearRampToValueAtTime(rightValue, now + .03);
+					});
 				}
 
 				function beginRequest() {
@@ -1186,7 +1171,7 @@
 					merger.connect(ac.destination);
 					oscillator.start(now);
 					if (end) oscillator.stop(end + .01);
-					active = [{ oscillator, leftGain, rightGain, merger }];
+					active = [{ oscillator, leftGain, rightGain, merger, channel, balanceDb }];
 					return true;
 				}
 
@@ -1207,7 +1192,7 @@
 					if (requestId === sequenceId) clearActiveNodes();
 				}
 
-				return { play, alternate, stop };
+				return { play, alternate, stop, setGain };
 			})();
 
 			function testKey(test) { return `${test.frequency}-${test.level}`; }
@@ -1228,7 +1213,6 @@
 					detailSession: state.detailSession ? { ...state.detailSession } : null,
 					context: { ...state.context },
 					baseVolume: state.baseVolume,
-					highInputDb: state.highInputDb,
 					createdAt: state.measurements.find((item) => item.id === state.currentMeasurementId)?.createdAt || state.savedAt || new Date().toISOString(),
 					savedAt: state.savedAt
 				};
@@ -1241,22 +1225,26 @@
 				state.detailSession = record.detailSession ? { ...record.detailSession } : null;
 				state.context = { program: '', connection: '未記入', deviceVolume: '', note: '', ...(record.context || {}) };
 				state.baseVolume = Number(record.baseVolume) || 10;
-				state.highInputDb = 80;
 				state.savedAt = record.savedAt || null;
 				state.restoredFromStorage = Object.keys(state.results).length > 0 || Object.keys(state.detailResults).length > 0 || Boolean(state.detailSession);
 				state.mode = 'quick';
 				state.detailTests = [];
 				state.currentIndex = 0;
 				state.balanceTarget = null;
-				INPUT_LEVELS = buildInputLevels(state.highInputDb);
-				TESTS = buildQuickTests(INPUT_LEVELS);
 			}
 
 			function persistMeasurements() {
-				localStorage.setItem(STORAGE_KEY, JSON.stringify({
-					currentMeasurementId: state.currentMeasurementId,
-					measurements: state.measurements
-				}));
+				try {
+					localStorage.setItem(STORAGE_KEY, JSON.stringify({
+						currentMeasurementId: state.currentMeasurementId,
+						measurements: state.measurements
+					}));
+					return true;
+				} catch (error) {
+					console.error('測定データを保存できませんでした。', error);
+					showToast('ブラウザへ保存できませんでした。空き容量やプライベートモードを確認してください');
+					return false;
+				}
 			}
 
 			function loadState() {
@@ -1266,7 +1254,7 @@
 						state.currentMeasurementId = createMeasurementId();
 						return;
 					}
-					state.measurements = store.measurements.filter((record) => Number(record.highInputDb || 80) === 80);
+					state.measurements = store.measurements;
 					const selected = state.measurements.find((record) => record.id === store.currentMeasurementId)
 						|| [...state.measurements].sort((a, b) => String(b.savedAt || b.createdAt).localeCompare(String(a.savedAt || a.createdAt)))[0];
 					if (selected) applyMeasurement(selected);
@@ -1288,7 +1276,7 @@
 			}
 
 			function renderInputProfile() {
-				const high = state.highInputDb;
+				const high = HIGH_INPUT_DB;
 				const [lowLevel, mediumLevel, highLevel] = INPUT_LEVELS;
 				$('#measurementProfileSummary').textContent = `補聴器調整の50 / 65 / ${high} dB入力に相当するレベル差で、左・右を聞き比べます。`;
 				$('#calibrationProfileHelp').innerHTML = `${high} dB入力相当の基準を、左右のうち<strong>大きく聞こえる側でも、はっきり聞こえて不快ではない音量</strong>に合わせます。50 dB相当が聞こえにくくても、基準を上げすぎないでください。`;
@@ -1310,13 +1298,16 @@
 				}
 				const count = Object.keys(state.results).filter((key) => TESTS.some((test) => testKey(test) === key)).length;
 				const detailCount = Object.keys(state.detailResults).length;
-				const date = state.savedAt ? new Intl.DateTimeFormat('ja-JP', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(state.savedAt)) : '保存日時不明';
+				const date = formatDateTime(state.savedAt, '保存日時不明');
 				const detailText = detailCount ? `・詳細 ${detailCount} 項目` : '';
 				const session = state.detailSession;
 				const continuationText = session && DETAIL_RANGES[session.anchorFrequency]
 					? `・${formatFrequency(session.anchorFrequency)}周辺／${session.inputDb} dB相当の詳細測定を途中保存`
 					: '';
 				$('#restoreMeta').textContent = `${count} / 9 項目を記録${detailText}${continuationText}・最終保存 ${date}`;
+				const complete = count >= TESTS.length && !session;
+				$('#restoreTitle').textContent = complete ? '保存済みの測定結果を表示しています' : '前回の続きから測定できます';
+				$('#continueSavedBtn').hidden = complete;
 				notice.hidden = false;
 			}
 
@@ -1340,14 +1331,12 @@
 				const section = $('#measurementHistory');
 				const list = $('#measurementHistoryList');
 				const records = [...state.measurements]
-					.filter((record) => measurementRecordHasContent(record) || record.id === state.currentMeasurementId)
+					.filter(measurementRecordHasContent)
 					.sort((a, b) => String(b.savedAt || b.createdAt).localeCompare(String(a.savedAt || a.createdAt)));
 				const selectedRecord = state.measurements.find((record) => record.id === state.currentMeasurementId);
 				if (selectedRecord) {
 					const selectedDateValue = selectedRecord.savedAt || selectedRecord.createdAt;
-					const selectedDate = selectedDateValue
-						? new Intl.DateTimeFormat('ja-JP', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(selectedDateValue))
-						: '日時不明';
+					const selectedDate = formatDateTime(selectedDateValue);
 					const selectedName = selectedRecord.context?.program ? `${selectedRecord.context.program}・` : '';
 					$('#selectedMeasurementMeta').textContent = `表示中：${selectedName}${selectedDate}（自動保存）`;
 				} else {
@@ -1363,14 +1352,15 @@
 					const title = document.createElement('strong');
 					title.className = 'measurement-history-title';
 					const dateValue = record.savedAt || record.createdAt;
-					const date = dateValue
-						? new Intl.DateTimeFormat('ja-JP', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(dateValue))
-						: '日時不明';
-					title.textContent = record.context?.program || `測定 ${date}`;
+					const date = formatDateTime(dateValue);
+					title.textContent = `測定 ${date}`;
+					const context = document.createElement('span');
+					context.className = 'measurement-history-context';
+					context.textContent = `プログラム：${record.context?.program || '未記入'} ／ 聞き方：${record.context?.connection && record.context.connection !== '未記入' ? record.context.connection : '未記入'}`;
 					const meta = document.createElement('span');
 					meta.className = 'measurement-history-meta';
-					meta.textContent = `${Object.keys(record.results || {}).length} / 9 項目・詳細 ${Object.keys(record.detailResults || {}).length} 項目・${date}`;
-					description.append(title, meta);
+					meta.textContent = `${Object.keys(record.results || {}).length} / 9 項目・詳細 ${Object.keys(record.detailResults || {}).length} 項目`;
+					description.append(title, context, meta);
 					const actions = document.createElement('div');
 					actions.className = 'measurement-history-actions';
 					if (current) {
@@ -1421,7 +1411,7 @@
 				const results = activeResults();
 				$('#bandBadge').textContent = state.mode === 'detail' ? '詳' : test.badge;
 				$('#currentTestTitle').textContent = state.mode === 'detail' ? `${test.frequency} Hz・${test.levelLabel}` : `${test.band}・${test.levelLabel}`;
-				const relativeLabel = test.relativeDb === 0 ? `${state.highInputDb} dB基準` : `${state.highInputDb} dB基準より ${test.relativeDb} dB`;
+				const relativeLabel = test.relativeDb === 0 ? `${HIGH_INPUT_DB} dB基準` : `${HIGH_INPUT_DB} dB基準より ${test.relativeDb} dB`;
 				$('#currentTestDetail').textContent = `${state.currentIndex + 1} / ${tests.length} ・ ${test.frequency} Hz ・ ${relativeLabel}`;
 				$('#stepPosition').textContent = `${state.currentIndex + 1} / ${tests.length}${state.mode === 'detail' ? '（詳細測定）' : ''}`;
 				$('#previousTestBtn').disabled = state.currentIndex === 0;
@@ -1432,16 +1422,16 @@
 				});
 			}
 
-			function renderResults() {
+			function mergedMeasurementData() {
 				const detailEntries = Object.values(state.detailResults);
-				const detailByCell = new Map();
-				detailEntries.forEach((result) => {
-					const key = `${result.inputDb}-${result.frequency}`;
-					const current = detailByCell.get(key);
-					if (!current || String(result.recordedAt || '') > String(current.recordedAt || '')) detailByCell.set(key, result);
-				});
+				const detailByCell = new Map(detailEntries.map((result) => [`${result.inputDb}-${result.frequency}`, result]));
 				const frequencies = [...new Set([500, 2000, 4000, ...detailEntries.map((result) => Number(result.frequency))])]
 					.sort((a, b) => a - b);
+				return { detailEntries, detailByCell, frequencies };
+			}
+
+			function renderResults() {
+				const { detailEntries, detailByCell, frequencies } = mergedMeasurementData();
 				const detailedFrequencies = new Set(detailEntries.map((result) => Number(result.frequency)));
 				const headerRow = $('#resultsHeaderRow');
 				headerRow.innerHTML = '<th>入力</th>';
@@ -1495,12 +1485,17 @@
 
 				const completed = Object.keys(state.results).filter((key) => TESTS.some((test) => testKey(test) === key)).length;
 				$('#progressText').textContent = `${completed} / 9 記録`;
-				$('#memoArea').value = generateMemo();
 				renderMemoPreview();
 			}
 
 			function formatFrequency(frequency) {
 				return frequency >= 1000 ? `${frequency / 1000} kHz` : `${frequency} Hz`;
+			}
+
+			function formatDateTime(value, fallback = '日時不明') {
+				return value
+					? new Intl.DateTimeFormat('ja-JP', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value))
+					: fallback;
 			}
 
 			function isSideDifference(rating) {
@@ -1581,120 +1576,27 @@
 				const list = $('#detailSuggestionList');
 				list.innerHTML = '';
 				section.hidden = candidates.length === 0;
-				[80, 65, 50].forEach((inputDb) => {
-					const row = document.createElement('tr');
-					const heading = document.createElement('td');
-					heading.textContent = `G${inputDb}`;
-					row.appendChild(heading);
-					[500, 2000, 4000].forEach((frequency) => {
-						const cell = document.createElement('td');
-						const test = candidates.find((item) => item.frequency === frequency && item.inputDb === inputDb);
-						if (!test) {
-							cell.className = 'not-applicable';
-							cell.textContent = '—';
-							row.appendChild(cell);
-							return;
-						}
+				candidates.forEach((test) => {
 						const frequencies = DETAIL_RANGES[test.frequency];
 						const complete = frequencies.every((detailFrequency) => state.detailResults[`${test.frequency}-${test.inputDb}-${detailFrequency}`]);
 						const button = document.createElement('button');
 						button.type = 'button';
 						button.className = `btn detail-suggestion-btn${complete ? ' completed-detail' : ''}`;
 						button.innerHTML = complete
-							? '✓ 詳細測定済み<small>結果を見る</small>'
-							: `詳しく測る<small>${RATINGS[state.results[testKey(test)].rating]}</small>`;
+							? `${formatFrequency(test.frequency)}・G${test.inputDb}<small>✓ 詳細測定済み・結果を見る</small>`
+							: `${formatFrequency(test.frequency)}・G${test.inputDb}<small>${RATINGS[state.results[testKey(test)].rating]} → 詳しく測る</small>`;
 						button.addEventListener('click', () => {
 							if (complete) $('#resultsTitle').scrollIntoView({ behavior: 'smooth', block: 'start' });
 							else startDetailMeasurement(test.frequency, test.inputDb);
 						});
-						cell.appendChild(button);
-						row.appendChild(cell);
-					});
-					list.appendChild(row);
+						list.appendChild(button);
 				});
-			}
-
-			function generateMemo() {
-				const lines = ['補聴器の左右の聞こえ方について相談したいです。', ''];
-				const contextLines = [];
-				if (state.context.program) contextLines.push(`補聴器のプログラム：${state.context.program}`);
-				if (state.context.connection !== '未記入') contextLines.push(`音の聞き方：${state.context.connection}`);
-				if (state.context.deviceVolume) contextLines.push(`端末側の音量：${state.context.deviceVolume}`);
-				contextLines.push(`入力レベル：50 / 65 / ${state.highInputDb} dB相当の相対差（実音圧は未校正）`);
-				if (contextLines.length) lines.push('【測定時の状況】', ...contextLines, '');
-				lines.push('【参考情報（アプリ内部設定）】', `アプリ内の基準出力：レベル ${state.baseVolume} / 100（端末依存・実音圧ではありません）`, '');
-
-				const completed = TESTS.filter((test) => state.results[testKey(test)]);
-				if (completed.length) {
-					lines.push('【感じ方の記録】');
-					[500, 2000, 4000].forEach((frequency) => {
-						const bandTests = TESTS.filter((test) => test.frequency === frequency && state.results[testKey(test)]);
-						if (!bandTests.length) return;
-						const first = bandTests[0];
-						const values = bandTests.map((test) => {
-							const result = state.results[testKey(test)];
-							const balance = Number.isFinite(result.balanceDb) ? `（アプリ上の補正目安：${balanceDescription(result.balanceDb)}）` : '';
-							return `${test.levelLabel}：${RATINGS[result.rating]}${balance}`;
-						});
-						lines.push(`・${first.band}（${frequency >= 1000 ? frequency / 1000 + ' kHz' : frequency + ' Hz'}）― ${values.join('、')}`);
-					});
-					lines.push('');
-				} else {
-					lines.push('【感じ方の記録】', 'まだ測定結果はありません。', '');
-				}
-
-				const detailEntries = Object.values(state.detailResults).sort((a, b) =>
-					a.anchorFrequency - b.anchorFrequency || a.inputDb - b.inputDb || a.frequency - b.frequency
-				);
-				if (detailEntries.length) {
-					lines.push('【周辺の詳細測定】');
-					const groups = new Map();
-					detailEntries.forEach((result) => {
-						const key = `${result.anchorFrequency}-${result.inputDb}`;
-						if (!groups.has(key)) groups.set(key, []);
-						groups.get(key).push(result);
-					});
-					groups.forEach((results) => {
-						const first = results[0];
-						const values = results.map((result) => {
-							const balance = Number.isFinite(result.balanceDb) ? `（補正目安：${balanceDescription(result.balanceDb)}）` : '';
-							return `${formatFrequency(result.frequency)}：${RATINGS[result.rating]}${balance}`;
-						});
-						lines.push(`・${formatFrequency(first.anchorFrequency)}周辺・${first.inputDb} dB入力相当 ― ${values.join('、')}`);
-					});
-					lines.push('');
-				}
-
-				const left = completed.filter((test) => state.results[testKey(test)].rating.startsWith('left'));
-				const right = completed.filter((test) => state.results[testKey(test)].rating.startsWith('right'));
-				const uncomfortable = completed.filter((test) => state.results[testKey(test)].rating === 'uncomfortable');
-				const inaudible = completed.filter((test) => state.results[testKey(test)].rating === 'inaudible');
-				if (left.length || right.length || uncomfortable.length || inaudible.length) {
-					lines.push('【確認をお願いしたい点】');
-					if (left.length) lines.push('・左が大きく感じた項目があるため、左右の出力バランスを確認してほしいです。');
-					if (right.length) lines.push('・右が大きく感じた項目があるため、左右の出力バランスを確認してほしいです。');
-					if (uncomfortable.length) lines.push('・不快または大きすぎると感じた音域・入力レベルがあります。最大出力や圧縮を含めて確認してほしいです。');
-					if (inaudible.length) lines.push('・よく聞こえない音域・入力レベルがあります。小さい入力音に対する増幅を含めて確認してほしいです。');
-					lines.push('');
-				}
-
-				if (state.context.note) lines.push('【気になる場面・音】', state.context.note, '');
-				lines.push('この記録はブラウザ上の相対的な聞こえ方で、校正された聴力検査の結果ではありません。補正dBは補聴器へ入る前のアプリ入力信号の減衰量で、フィッティング利得とは一致しません。実際の調整内容について確認をお願いします。');
-				return lines.join('\n');
 			}
 
 			function renderMemoPreview() {
 				const root = $('#memoPreview');
 				root.innerHTML = '';
-				const memoDetailEntries = Object.values(state.detailResults);
-				const memoDetailByCell = new Map();
-				memoDetailEntries.forEach((result) => {
-					const key = `${result.inputDb}-${result.frequency}`;
-					const current = memoDetailByCell.get(key);
-					if (!current || String(result.recordedAt || '') > String(current.recordedAt || '')) memoDetailByCell.set(key, result);
-				});
-				const memoFrequencies = [...new Set([500, 2000, 4000, ...memoDetailEntries.map((result) => Number(result.frequency))])]
-					.sort((a, b) => a - b);
+				const { detailEntries: memoDetailEntries, detailByCell: memoDetailByCell, frequencies: memoFrequencies } = mergedMeasurementData();
 
 				function add(parent, tag, className, text) {
 					const element = document.createElement(tag);
@@ -1757,7 +1659,7 @@
 
 				const header = add(root, 'div', 'memo-preview-header');
 				add(header, 'h3', '', '補聴器の左右の聞こえ方・相談メモ');
-				const savedDate = state.savedAt ? new Intl.DateTimeFormat('ja-JP', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(state.savedAt)) : '未保存';
+				const savedDate = formatDateTime(state.savedAt, '未保存');
 				add(header, 'p', '', `最終更新 ${savedDate}`);
 				const body = add(root, 'div', 'memo-preview-body');
 
@@ -1824,7 +1726,6 @@
 					detailSession: null,
 					context: { program: '', connection: '未記入', deviceVolume: '', note: '' },
 					baseVolume: state.baseVolume,
-					highInputDb: 80,
 					createdAt: new Date().toISOString(),
 					savedAt: null
 				};
@@ -1880,7 +1781,14 @@
 				showToast('測定記録を削除しました');
 			}
 
+			let advanceTimer = null;
+			function clearAdvanceTimer() {
+				if (advanceTimer !== null) clearTimeout(advanceTimer);
+				advanceTimer = null;
+			}
+
 			function selectTest(index) {
+				clearAdvanceTimer();
 				AudioEngine.stop();
 				state.currentIndex = index;
 				renderSteps();
@@ -1888,6 +1796,7 @@
 			}
 
 			function showCalibration() {
+				clearAdvanceTimer();
 				AudioEngine.stop();
 				$('#calibrationPanel').hidden = false;
 				$('#testFlow').hidden = true;
@@ -1895,6 +1804,7 @@
 			}
 
 			function startMeasurementFlow() {
+				clearAdvanceTimer();
 				AudioEngine.stop();
 				if (state.mode === 'detail' && state.detailTests.length) {
 					const firstIncomplete = state.detailTests.findIndex((test) => !state.detailResults[detailKey(test)]);
@@ -1921,6 +1831,7 @@
 			}
 
 			function showCompletion() {
+				clearAdvanceTimer();
 				AudioEngine.stop();
 				$('#calibrationPanel').hidden = true;
 				$('#testFlow').hidden = true;
@@ -1938,17 +1849,11 @@
 			}
 
 			function startDetailMeasurement(anchorFrequency, inputDb) {
+				clearAdvanceTimer();
 				AudioEngine.stop();
-				const level = INPUT_LEVELS.find((item) => item.inputDb === inputDb);
 				state.mode = 'detail';
 				state.detailSession = { anchorFrequency, inputDb };
-				state.detailTests = DETAIL_RANGES[anchorFrequency].map((frequency) => ({
-					...level,
-					frequency,
-					anchorFrequency,
-					band: `${formatFrequency(anchorFrequency)}周辺`,
-					badge: '詳'
-				}));
+				state.detailTests = buildDetailTests(anchorFrequency, inputDb);
 				const firstIncomplete = state.detailTests.findIndex((test) => !state.detailResults[detailKey(test)]);
 				state.currentIndex = firstIncomplete < 0 ? 0 : firstIncomplete;
 				saveState();
@@ -1960,18 +1865,23 @@
 				$('#testFlow').scrollIntoView({ behavior: 'smooth', block: 'start' });
 			}
 
+			function buildDetailTests(anchorFrequency, inputDb) {
+				const level = INPUT_LEVELS.find((item) => item.inputDb === inputDb);
+				if (!level || !DETAIL_RANGES[anchorFrequency]) return [];
+				return DETAIL_RANGES[anchorFrequency].map((frequency) => ({
+					...level,
+					frequency,
+					anchorFrequency,
+					band: `${formatFrequency(anchorFrequency)}周辺`,
+					badge: '詳'
+				}));
+			}
+
 			function prepareSavedContinuation() {
 				const session = state.detailSession;
 				if (session && DETAIL_RANGES[session.anchorFrequency]) {
-					const level = INPUT_LEVELS.find((item) => item.inputDb === session.inputDb);
-					if (level) {
-						const tests = DETAIL_RANGES[session.anchorFrequency].map((frequency) => ({
-							...level,
-							frequency,
-							anchorFrequency: session.anchorFrequency,
-							band: `${formatFrequency(session.anchorFrequency)}周辺`,
-							badge: '詳'
-						}));
+					const tests = buildDetailTests(session.anchorFrequency, session.inputDb);
+					if (tests.length) {
 						const hasIncomplete = tests.some((test) => !state.detailResults[detailKey(test)]);
 						if (hasIncomplete) {
 							state.mode = 'detail';
@@ -2008,7 +1918,6 @@
 				updateRangeProgress($('#baseVolume'));
 				$('#baseVolumeOutput').textContent = `レベル ${state.baseVolume} / 100`;
 				saveState();
-				$('#memoArea').value = generateMemo();
 				renderMemoPreview();
 				renderMeasurementHistory();
 			}
@@ -2062,8 +1971,9 @@
 				else showToast('記録しました');
 
 				const nextIndex = tests.findIndex((item, index) => index > state.currentIndex && !results[state.mode === 'detail' ? detailKey(item) : testKey(item)]);
-				if (nextIndex >= 0) setTimeout(() => selectTest(nextIndex), 350);
-				else setTimeout(showCompletion, 350);
+				advanceTimer = nextIndex >= 0
+					? setTimeout(() => selectTest(nextIndex), 350)
+					: setTimeout(showCompletion, 350);
 			}
 
 			let toastTimer;
@@ -2080,9 +1990,26 @@
 				state.generator.playing = false;
 				const measure = name === 'measure';
 				$('#measureTab').setAttribute('aria-selected', measure ? 'true' : 'false');
+				$('#measureTab').tabIndex = measure ? 0 : -1;
 				$('#generatorTab').setAttribute('aria-selected', measure ? 'false' : 'true');
+				$('#generatorTab').tabIndex = measure ? -1 : 0;
 				$('#measurePanel').hidden = !measure;
 				$('#generatorPanel').hidden = measure;
+			}
+
+			function handleTabKeydown(event) {
+				const tabs = [$('#generatorTab'), $('#measureTab')];
+				const currentIndex = tabs.indexOf(event.currentTarget);
+				let nextIndex;
+				if (event.key === 'ArrowRight') nextIndex = (currentIndex + 1) % tabs.length;
+				else if (event.key === 'ArrowLeft') nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+				else if (event.key === 'Home') nextIndex = 0;
+				else if (event.key === 'End') nextIndex = tabs.length - 1;
+				else return;
+				event.preventDefault();
+				const nextTab = tabs[nextIndex];
+				setTab(nextTab === $('#measureTab') ? 'measure' : 'generator');
+				nextTab.focus();
 			}
 
 			function renderGeneratorFrequencies() {
@@ -2139,7 +2066,6 @@
 				$(selector).addEventListener(eventName, (event) => {
 					state.context[property] = event.target.value;
 					saveState();
-					$('#memoArea').value = generateMemo();
 					renderMemoPreview();
 					renderMeasurementHistory();
 				});
@@ -2163,6 +2089,7 @@
 
 				$('#measureTab').addEventListener('click', () => setTab('measure'));
 				$('#generatorTab').addEventListener('click', () => setTab('generator'));
+				$$('.tab').forEach((tab) => tab.addEventListener('keydown', handleTabKeydown));
 				$('#playLeftBtn').addEventListener('click', () => playMeasurement('left'));
 				$('#playRightBtn').addEventListener('click', () => playMeasurement('right'));
 				$('#playBothBtn').addEventListener('click', () => playMeasurement('both'));
@@ -2248,29 +2175,9 @@
 					setBaseVolume(event.target.value);
 				});
 
-				$('#copyMemoBtn').addEventListener('click', async () => {
-					try {
-						await navigator.clipboard.writeText($('#memoArea').value);
-						showToast('相談メモをコピーしました');
-					} catch (_) {
-						$('#memoArea').select();
-						document.execCommand('copy');
-						showToast('相談メモをコピーしました');
-					}
-				});
-
-				$('#downloadMemoBtn').addEventListener('click', () => {
-					const blob = new Blob([$('#memoArea').value], { type: 'text/plain;charset=utf-8' });
-					const link = document.createElement('a');
-					link.href = URL.createObjectURL(blob);
-					link.download = `hearing-balance-${new Date().toISOString().slice(0, 10)}.txt`;
-					link.click();
-					URL.revokeObjectURL(link.href);
-				});
-
 				$('#generatorGain').addEventListener('input', (event) => {
 					$('#generatorGainOutput').textContent = `${event.target.value}%`;
-					if (state.generator.playing) playGenerator();
+					if (state.generator.playing) AudioEngine.setGain(Number(event.target.value) / 100);
 				});
 				$('#generatorFrequency').addEventListener('change', (event) => {
 					selectGeneratorFrequency(Math.min(8000, Math.max(25, Number(event.target.value) || 500)));
@@ -2292,10 +2199,16 @@
 				$('#generatorStopBtn').addEventListener('click', stopGenerator);
 
 				document.addEventListener('keydown', (event) => {
-					if (event.key === 'Escape') stopGenerator();
-				});
-				document.addEventListener('visibilitychange', () => {
-					if (document.hidden) stopGenerator();
+					if (event.key === 'Escape') {
+						stopGenerator();
+						return;
+					}
+					const interactive = event.target.closest('input, select, textarea, button, [contenteditable="true"]');
+					if (event.code === 'Space' && !interactive && !$('#generatorPanel').hidden) {
+						event.preventDefault();
+						if (state.generator.playing) stopGenerator();
+						else playGenerator();
+					}
 				});
 			}
 
