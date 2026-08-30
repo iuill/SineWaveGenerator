@@ -443,7 +443,40 @@
 		.volume-block { margin-bottom: 1.4rem; }
 		.range-row { display: flex; justify-content: space-between; gap: 1rem; margin-bottom: .45rem; }
 		.range-row output { font-weight: 850; color: var(--teal-dark); }
-		input[type="range"] { width: 100%; accent-color: var(--teal); }
+		input[type="range"] {
+			width: 100%;
+			height: 1.25rem;
+			margin: 0;
+			appearance: none;
+			-webkit-appearance: none;
+			background: transparent;
+			cursor: pointer;
+		}
+		input[type="range"]::-webkit-slider-runnable-track {
+			height: .5rem;
+			border: 1px solid #aebbc5;
+			border-radius: 999px;
+			background: linear-gradient(to right, var(--teal) 0 var(--range-progress, 0%), #edf1f3 var(--range-progress, 0%) 100%);
+		}
+		input[type="range"]::-webkit-slider-thumb {
+			width: 1.15rem;
+			height: 1.15rem;
+			margin-top: -.39rem;
+			border: 0;
+			border-radius: 50%;
+			appearance: none;
+			-webkit-appearance: none;
+			background: var(--teal);
+		}
+		input[type="range"]::-moz-range-track {
+			height: .5rem;
+			border: 1px solid #aebbc5;
+			border-radius: 999px;
+			background: #edf1f3;
+		}
+		input[type="range"]::-moz-range-progress { height: .5rem; border-radius: 999px; background: var(--teal); }
+		input[type="range"]::-moz-range-thumb { width: 1.15rem; height: 1.15rem; border: 0; border-radius: 50%; background: var(--teal); }
+		input[type="range"]:focus-visible { outline: 3px solid rgba(8,127,121,.24); outline-offset: 3px; border-radius: 999px; }
 
 		.field { margin-top: 1rem; }
 		.field label { display: block; margin-bottom: .4rem; font-size: .88rem; font-weight: 800; }
@@ -486,6 +519,23 @@
 		.merged-results-table th.detail-frequency { color: var(--teal-dark); background: var(--teal-soft); }
 		.frequency-detail-mark { display: block; margin-top: .15rem; font-size: .65rem; font-weight: 700; letter-spacing: 0; }
 		.merged-results-help { margin-top: .65rem; color: var(--teal-dark); font-size: .8rem; }
+		.measurement-history { margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--line); }
+		.measurement-history-list { display: grid; gap: .55rem; margin-top: .75rem; }
+		.measurement-history-item {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 1rem;
+			padding: .8rem .9rem;
+			border: 1px solid var(--line);
+			border-radius: 12px;
+			background: #fbfcfc;
+		}
+		.measurement-history-item.current { border-color: #83c8c1; background: var(--teal-soft); }
+		.measurement-history-title { display: block; font-weight: 850; }
+		.measurement-history-meta { display: block; margin-top: .15rem; color: var(--muted); font-size: .78rem; }
+		.measurement-history-actions { display: flex; flex: 0 0 auto; gap: .4rem; }
+		.measurement-current-badge { color: var(--teal-dark); font-size: .78rem; font-weight: 850; }
 
 		.memo-area {
 			width: 100%;
@@ -677,6 +727,8 @@
 			.side-card { position: static; }
 			.restore-notice { align-items: stretch; flex-direction: column; }
 			.restore-actions { flex-wrap: wrap; }
+			.measurement-history-item { align-items: stretch; flex-direction: column; }
+			.measurement-history-actions { align-items: center; }
 			.rating-grid { grid-template-columns: 1fr 1fr; }
 			.rating-grid .rating-btn:nth-child(3) { grid-column: 1 / -1; }
 			.generator-grid { grid-template-columns: 1fr; }
@@ -756,9 +808,10 @@
 						<div class="volume-block">
 							<div class="range-row">
 								<label for="baseVolume"><strong id="baseVolumeLabel"></strong></label>
-								<output id="baseVolumeOutput" for="baseVolume">レベル 10 / 25</output>
+								<output id="baseVolumeOutput" for="baseVolume">レベル 10 / 100</output>
 							</div>
-							<input id="baseVolume" type="range" min="2" max="25" step="1" value="10">
+							<input id="baseVolume" type="range" min="2" max="100" step="1" value="10">
+							<p class="notice">100はアプリ内の最大振幅です。純音は強く感じることがあるため、低い値から少しずつ上げてください。</p>
 						</div>
 						<div class="preview-grid" role="group" aria-label="確認音の再生">
 							<span aria-hidden="true"></span>
@@ -840,7 +893,7 @@
 						</div>
 						<div class="action-row" style="justify-content:center">
 							<button class="btn primary" id="viewResultsBtn" type="button">結果を見る</button>
-							<button class="btn" id="measureAgainBtn" type="button">もう一度測定する</button>
+							<button class="btn" id="measureAgainBtn" type="button">新しい測定を始める</button>
 						</div>
 					</div>
 				</div>
@@ -883,7 +936,7 @@
 						</div>
 						<p class="merged-results-help" id="mergedResultsHelp" hidden>詳細測定した周波数を、この表の横軸へ追加しています。</p>
 					</div>
-					<button class="btn small" id="clearResultsBtn" type="button">結果を消去</button>
+					<button class="btn small danger" id="clearResultsBtn" type="button">この測定を削除</button>
 				</div>
 				<div class="table-wrap">
 					<table class="merged-results-table" id="resultsTable">
@@ -891,6 +944,11 @@
 						<tbody id="resultsBody"></tbody>
 					</table>
 				</div>
+				<section class="measurement-history" id="measurementHistory" hidden>
+					<h2>保存した測定</h2>
+					<p class="helper">測定はブラウザ内へ個別に保存されます。過去の結果を表示したり、不要な結果だけ削除できます。</p>
+					<div class="measurement-history-list" id="measurementHistoryList"></div>
+				</section>
 				<div class="balance-panel" id="balancePanel" hidden>
 					<div class="section-heading">
 						<div>
@@ -943,7 +1001,7 @@
 					</div>
 					<div class="field">
 						<label for="generatorGain">音量 <output id="generatorGainOutput">5%</output></label>
-						<input id="generatorGain" type="range" min="0" max="25" step="1" value="5">
+						<input id="generatorGain" type="range" min="0" max="100" step="1" value="5">
 					</div>
 					<div class="field">
 						<label>出力先</label>
@@ -1021,7 +1079,7 @@
 				uncomfortable: '不快・大きすぎる'
 			};
 
-			const STORAGE_KEY = 'hearing-balance-note-v1';
+			const STORAGE_KEY = 'hearing-balance-note-v2';
 			const GENERATOR_FREQUENCIES = [
 				25, 50, 75, 100, 125, 150, 175, 200, 225, 250,
 				275, 300, 325, 350, 375, 400, 425, 450, 475, 500,
@@ -1034,6 +1092,10 @@
 			];
 			const $ = (selector) => document.querySelector(selector);
 			const $$ = (selector) => [...document.querySelectorAll(selector)];
+
+			function createMeasurementId() {
+				return globalThis.crypto?.randomUUID?.() || `measurement-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+			}
 
 			const state = {
 				mode: 'quick',
@@ -1048,6 +1110,8 @@
 				highInputDb: 80,
 				savedAt: null,
 				restoredFromStorage: false,
+				measurements: [],
+				currentMeasurementId: null,
 				generator: { channel: 'both', wave: 'sine', frequency: 500, playing: false }
 			};
 
@@ -1150,37 +1214,75 @@
 			function activeResults() { return state.mode === 'detail' ? state.detailResults : state.results; }
 			function activeTestKey(test) { return state.mode === 'detail' ? detailKey(test) : testKey(test); }
 
+			function cloneData(value) {
+				return JSON.parse(JSON.stringify(value));
+			}
+
+			function measurementSnapshot() {
+				return {
+					id: state.currentMeasurementId,
+					results: cloneData(state.results),
+					detailResults: cloneData(state.detailResults),
+					detailSession: state.detailSession ? { ...state.detailSession } : null,
+					context: { ...state.context },
+					baseVolume: state.baseVolume,
+					highInputDb: state.highInputDb,
+					createdAt: state.measurements.find((item) => item.id === state.currentMeasurementId)?.createdAt || state.savedAt || new Date().toISOString(),
+					savedAt: state.savedAt
+				};
+			}
+
+			function applyMeasurement(record) {
+				state.currentMeasurementId = record.id;
+				state.results = cloneData(record.results || {});
+				state.detailResults = cloneData(record.detailResults || {});
+				state.detailSession = record.detailSession ? { ...record.detailSession } : null;
+				state.context = { program: '', connection: '未記入', deviceVolume: '', note: '', ...(record.context || {}) };
+				state.baseVolume = Number(record.baseVolume) || 10;
+				state.highInputDb = 80;
+				state.savedAt = record.savedAt || null;
+				state.restoredFromStorage = Object.keys(state.results).length > 0 || Object.keys(state.detailResults).length > 0 || Boolean(state.detailSession);
+				state.mode = 'quick';
+				state.detailTests = [];
+				state.currentIndex = 0;
+				state.balanceTarget = null;
+				INPUT_LEVELS = buildInputLevels(state.highInputDb);
+				TESTS = buildQuickTests(INPUT_LEVELS);
+			}
+
+			function persistMeasurements() {
+				localStorage.setItem(STORAGE_KEY, JSON.stringify({
+					currentMeasurementId: state.currentMeasurementId,
+					measurements: state.measurements
+				}));
+			}
+
 			function loadState() {
 				try {
-					const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-					if (!saved) return;
-					const obsolete85Profile = Number(saved.highInputDb) === 85;
-					state.results = obsolete85Profile ? {} : (saved.results || {});
-					state.detailResults = obsolete85Profile ? {} : (saved.detailResults || {});
-					state.detailSession = obsolete85Profile ? null : (saved.detailSession || null);
-					state.context = { ...state.context, ...(saved.context || {}) };
-					state.baseVolume = Number(saved.baseVolume) || 10;
-					state.highInputDb = 80;
-					INPUT_LEVELS = buildInputLevels(state.highInputDb);
-					TESTS = buildQuickTests(INPUT_LEVELS);
-					state.savedAt = saved.savedAt || Object.values(state.results).map((result) => result.recordedAt).filter(Boolean).sort().at(-1) || null;
-					state.restoredFromStorage = Object.keys(state.results).length > 0 || Object.keys(state.detailResults).length > 0 || Boolean(state.detailSession);
+					const store = JSON.parse(localStorage.getItem(STORAGE_KEY));
+					if (!store?.measurements?.length) {
+						state.currentMeasurementId = createMeasurementId();
+						return;
+					}
+					state.measurements = store.measurements.filter((record) => Number(record.highInputDb || 80) === 80);
+					const selected = state.measurements.find((record) => record.id === store.currentMeasurementId)
+						|| [...state.measurements].sort((a, b) => String(b.savedAt || b.createdAt).localeCompare(String(a.savedAt || a.createdAt)))[0];
+					if (selected) applyMeasurement(selected);
+					else state.currentMeasurementId = createMeasurementId();
 				} catch (error) {
 					console.warn('保存データを読み込めませんでした。', error);
+					state.currentMeasurementId = createMeasurementId();
 				}
 			}
 
 			function saveState() {
+				if (!state.currentMeasurementId) state.currentMeasurementId = createMeasurementId();
 				state.savedAt = new Date().toISOString();
-				localStorage.setItem(STORAGE_KEY, JSON.stringify({
-					results: state.results,
-					detailResults: state.detailResults,
-					detailSession: state.detailSession,
-					context: state.context,
-					baseVolume: state.baseVolume,
-					highInputDb: state.highInputDb,
-					savedAt: state.savedAt
-				}));
+				const snapshot = measurementSnapshot();
+				const index = state.measurements.findIndex((record) => record.id === state.currentMeasurementId);
+				if (index >= 0) state.measurements[index] = snapshot;
+				else state.measurements.push(snapshot);
+				persistMeasurements();
 			}
 
 			function renderInputProfile() {
@@ -1214,6 +1316,75 @@
 					: '';
 				$('#restoreMeta').textContent = `${count} / 9 項目を記録${detailText}${continuationText}・最終保存 ${date}`;
 				notice.hidden = false;
+			}
+
+			function syncMeasurementInputs() {
+				$('#programName').value = state.context.program;
+				$('#connectionType').value = state.context.connection;
+				$('#deviceVolume').value = state.context.deviceVolume;
+				$('#situationNote').value = state.context.note;
+				$('#baseVolume').value = state.baseVolume;
+				$('#baseVolumeOutput').textContent = `レベル ${state.baseVolume} / 100`;
+				updateRangeProgress($('#baseVolume'));
+			}
+
+			function measurementRecordHasContent(record) {
+				return Object.keys(record.results || {}).length > 0
+					|| Object.keys(record.detailResults || {}).length > 0
+					|| Object.values(record.context || {}).some((value) => value && value !== '未記入');
+			}
+
+			function renderMeasurementHistory() {
+				const section = $('#measurementHistory');
+				const list = $('#measurementHistoryList');
+				const records = [...state.measurements]
+					.filter((record) => measurementRecordHasContent(record) || record.id === state.currentMeasurementId)
+					.sort((a, b) => String(b.savedAt || b.createdAt).localeCompare(String(a.savedAt || a.createdAt)));
+				list.innerHTML = '';
+				section.hidden = records.length === 0;
+				records.forEach((record) => {
+					const current = record.id === state.currentMeasurementId;
+					const item = document.createElement('div');
+					item.className = `measurement-history-item${current ? ' current' : ''}`;
+					const description = document.createElement('div');
+					const title = document.createElement('strong');
+					title.className = 'measurement-history-title';
+					const dateValue = record.savedAt || record.createdAt;
+					const date = dateValue
+						? new Intl.DateTimeFormat('ja-JP', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(dateValue))
+						: '日時不明';
+					title.textContent = record.context?.program || `測定 ${date}`;
+					const meta = document.createElement('span');
+					meta.className = 'measurement-history-meta';
+					meta.textContent = `${Object.keys(record.results || {}).length} / 9 項目・詳細 ${Object.keys(record.detailResults || {}).length} 項目・${date}`;
+					description.append(title, meta);
+					const actions = document.createElement('div');
+					actions.className = 'measurement-history-actions';
+					if (current) {
+						const badge = document.createElement('span');
+						badge.className = 'measurement-current-badge';
+						badge.textContent = '表示中';
+						actions.appendChild(badge);
+					} else {
+						const viewButton = document.createElement('button');
+						viewButton.type = 'button';
+						viewButton.className = 'btn small';
+						viewButton.textContent = '表示';
+						viewButton.addEventListener('click', () => selectMeasurement(record.id));
+						actions.appendChild(viewButton);
+					}
+					const deleteButton = document.createElement('button');
+					deleteButton.type = 'button';
+					deleteButton.className = 'btn small danger';
+					deleteButton.textContent = '削除';
+					deleteButton.addEventListener('click', () => {
+						if (!confirm('この測定記録だけを削除しますか？')) return;
+						deleteMeasurement(record.id);
+					});
+					actions.appendChild(deleteButton);
+					item.append(description, actions);
+					list.appendChild(item);
+				});
 			}
 
 			function renderSteps() {
@@ -1345,6 +1516,7 @@
 				state.balanceTarget = { type, key, test };
 				$('#balanceTargetLabel').textContent = `${formatFrequency(test.frequency)}・${test.inputDb} dB入力相当（${RATINGS[result.rating]}）`;
 				$('#balanceRange').value = Number.isFinite(result.balanceDb) ? result.balanceDb : 0;
+				updateRangeProgress($('#balanceRange'));
 				renderBalanceValue();
 				$('#balancePanel').hidden = false;
 				$('#balancePanel').scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1437,7 +1609,7 @@
 				if (state.context.deviceVolume) contextLines.push(`端末側の音量：${state.context.deviceVolume}`);
 				contextLines.push(`入力レベル：50 / 65 / ${state.highInputDb} dB相当の相対差（実音圧は未校正）`);
 				if (contextLines.length) lines.push('【測定時の状況】', ...contextLines, '');
-				lines.push('【参考情報（アプリ内部設定）】', `アプリ内の出力上限：レベル ${state.baseVolume} / 25（端末依存・実音圧ではありません）`, '');
+				lines.push('【参考情報（アプリ内部設定）】', `アプリ内の基準出力：レベル ${state.baseVolume} / 100（端末依存・実音圧ではありません）`, '');
 
 				const completed = TESTS.filter((test) => state.results[testKey(test)]);
 				if (completed.length) {
@@ -1592,8 +1764,8 @@
 				const internalSection = section(body, '参考情報（アプリ内部設定）');
 				const internalGrid = add(internalSection, 'div', 'memo-context-grid');
 				const internalItem = add(internalGrid, 'div', 'memo-context-item');
-				add(internalItem, 'small', '', 'アプリ内の出力上限');
-				add(internalItem, 'strong', '', `レベル ${state.baseVolume} / 25（端末依存・実音圧ではありません）`);
+				add(internalItem, 'small', '', 'アプリ内の基準出力');
+				add(internalItem, 'strong', '', `レベル ${state.baseVolume} / 100（端末依存・実音圧ではありません）`);
 
 				const findingsSection = section(body, 'アプリ入力側の相対減衰量（dB）');
 				const completedCount = Object.keys(state.results).length;
@@ -1628,29 +1800,71 @@
 				renderCurrentTest();
 				renderResults();
 				renderRestoreNotice();
+				renderMeasurementHistory();
 			}
 
-			function resetMeasurementData({ clearContext = false } = {}) {
+			function blankMeasurementRecord() {
+				return {
+					id: createMeasurementId(),
+					results: {},
+					detailResults: {},
+					detailSession: null,
+					context: { program: '', connection: '未記入', deviceVolume: '', note: '' },
+					baseVolume: state.baseVolume,
+					highInputDb: 80,
+					createdAt: new Date().toISOString(),
+					savedAt: null
+				};
+			}
+
+			function startNewMeasurement() {
 				AudioEngine.stop();
-				state.mode = 'quick';
-				state.results = {};
-				state.detailResults = {};
-				state.detailTests = [];
-				state.detailSession = null;
-				state.balanceTarget = null;
-				$('#balancePanel').hidden = true;
-				state.currentIndex = 0;
-				state.restoredFromStorage = false;
-				if (clearContext) {
-					state.context = { program: '', connection: '未記入', deviceVolume: '', note: '' };
-					$('#programName').value = '';
-					$('#connectionType').value = '未記入';
-					$('#deviceVolume').value = '';
-					$('#situationNote').value = '';
+				const currentRecord = state.measurements.find((record) => record.id === state.currentMeasurementId);
+				if (currentRecord && !measurementRecordHasContent(currentRecord)) {
+					state.measurements = state.measurements.filter((record) => record.id !== currentRecord.id);
 				}
-				saveState();
+				const record = blankMeasurementRecord();
+				state.measurements.push(record);
+				applyMeasurement(record);
+				persistMeasurements();
+				$('#balancePanel').hidden = true;
+				syncMeasurementInputs();
+				renderInputProfile();
 				renderAll();
 				showCalibration();
+			}
+
+			function selectMeasurement(id) {
+				const record = state.measurements.find((item) => item.id === id);
+				if (!record) return;
+				AudioEngine.stop();
+				applyMeasurement(record);
+				persistMeasurements();
+				$('#balancePanel').hidden = true;
+				syncMeasurementInputs();
+				renderInputProfile();
+				renderAll();
+				showCalibration();
+				$('#resultsTitle').scrollIntoView({ behavior: 'smooth', block: 'start' });
+				showToast('保存した測定を表示しました');
+			}
+
+			function deleteMeasurement(id) {
+				const deletingCurrent = id === state.currentMeasurementId;
+				state.measurements = state.measurements.filter((record) => record.id !== id);
+				if (deletingCurrent) {
+					const next = [...state.measurements]
+						.sort((a, b) => String(b.savedAt || b.createdAt).localeCompare(String(a.savedAt || a.createdAt)))[0]
+						|| blankMeasurementRecord();
+					if (!state.measurements.some((record) => record.id === next.id)) state.measurements.push(next);
+					applyMeasurement(next);
+					syncMeasurementInputs();
+					renderInputProfile();
+					showCalibration();
+				}
+				persistMeasurements();
+				renderAll();
+				showToast('測定記録を削除しました');
 			}
 
 			function selectTest(index) {
@@ -1767,14 +1981,23 @@
 				return (state.baseVolume / 100) * test.multiplier;
 			}
 
+			function updateRangeProgress(range) {
+				const min = Number(range.min) || 0;
+				const max = Number(range.max) || 100;
+				const progress = ((Number(range.value) - min) / (max - min)) * 100;
+				range.style.setProperty('--range-progress', `${Math.min(100, Math.max(0, progress))}%`);
+			}
+
 			function setBaseVolume(value) {
 				AudioEngine.stop();
-				state.baseVolume = Math.min(25, Math.max(2, Number(value)));
+				state.baseVolume = Math.min(100, Math.max(2, Number(value)));
 				$('#baseVolume').value = state.baseVolume;
-				$('#baseVolumeOutput').textContent = `レベル ${state.baseVolume} / 25`;
+				updateRangeProgress($('#baseVolume'));
+				$('#baseVolumeOutput').textContent = `レベル ${state.baseVolume} / 100`;
 				saveState();
 				$('#memoArea').value = generateMemo();
 				renderMemoPreview();
+				renderMeasurementHistory();
 			}
 
 			async function previewBaseVolume() {
@@ -1905,6 +2128,7 @@
 					saveState();
 					$('#memoArea').value = generateMemo();
 					renderMemoPreview();
+					renderMeasurementHistory();
 				});
 			}
 
@@ -1912,7 +2136,11 @@
 				loadState();
 				renderInputProfile();
 				$('#baseVolume').value = state.baseVolume;
-				$('#baseVolumeOutput').textContent = `レベル ${state.baseVolume} / 25`;
+				$('#baseVolumeOutput').textContent = `レベル ${state.baseVolume} / 100`;
+				$$('input[type="range"]').forEach((range) => {
+					updateRangeProgress(range);
+					range.addEventListener('input', () => updateRangeProgress(range));
+				});
 				bindContextField('#programName', 'program');
 				bindContextField('#connectionType', 'connection', 'change');
 				bindContextField('#deviceVolume', 'deviceVolume');
@@ -1949,7 +2177,7 @@
 				});
 				$('#stopPreviewBtn').addEventListener('click', () => AudioEngine.stop());
 				$('#baseTooQuietBtn').addEventListener('click', () => {
-					if (state.baseVolume >= 25) {
+					if (state.baseVolume >= 100) {
 						showToast('上限です。端末側の音量も確認してください');
 						return;
 					}
@@ -1987,8 +2215,8 @@
 				});
 				$('#viewResultsBtn').addEventListener('click', () => $('#resultsTitle').scrollIntoView({ behavior: 'smooth' }));
 				$('#measureAgainBtn').addEventListener('click', () => {
-					if (!confirm('現在の測定結果を消去して、最初から測定しますか？')) return;
-					resetMeasurementData();
+					startNewMeasurement();
+					showToast('現在の結果を残して、新しい測定を開始します');
 				});
 				$('#viewSavedResultsBtn').addEventListener('click', () => $('#resultsTitle').scrollIntoView({ behavior: 'smooth' }));
 				$('#continueSavedBtn').addEventListener('click', () => {
@@ -1999,9 +2227,8 @@
 						: '音量を確認してから続きを開始してください');
 				});
 				$('#startFreshBtn').addEventListener('click', () => {
-					if (!confirm('保存済みの測定結果と状況欄を消去して、新しい測定を始めますか？')) return;
-					resetMeasurementData({ clearContext: true });
-					showToast('新しい測定を開始します');
+					startNewMeasurement();
+					showToast('現在の結果を残して、新しい測定を開始します');
 				});
 
 				$('#baseVolume').addEventListener('input', (event) => {
@@ -2009,9 +2236,8 @@
 				});
 
 				$('#clearResultsBtn').addEventListener('click', () => {
-					if (!confirm('9項目の測定結果をすべて消去しますか？')) return;
-					resetMeasurementData();
-					showToast('測定結果を消去しました');
+					if (!confirm('現在表示している測定記録だけを削除しますか？')) return;
+					deleteMeasurement(state.currentMeasurementId);
 				});
 
 				$('#copyMemoBtn').addEventListener('click', async () => {
