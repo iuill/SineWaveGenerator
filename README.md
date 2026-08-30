@@ -2,6 +2,19 @@
 
 周波数・波形・左右チャンネル・音量を選んで再生できるブラウザ音声ツールです。補助機能として、補聴器の左右の聞こえ方を記録して相談メモにまとめる「かんたん測定」も搭載しています。
 
+## スクリーンショット
+
+### 自由再生
+
+<img src="assets/screenshots/free-play.png" alt="自由再生画面" width="800">
+
+<details>
+<summary>かんたん測定画面を見る</summary>
+
+<img src="assets/screenshots/hearing-balance-measurement.png" alt="かんたん測定画面" width="800">
+
+</details>
+
 ## 自由再生（メイン機能）
 
 - 25～8000 Hzの周波数選択
