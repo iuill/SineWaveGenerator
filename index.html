@@ -199,8 +199,8 @@
 			background: #dfe7e9;
 		}
 
-		.step-dot.current { background: #64bdb6; }
 		.step-dot.done { background: var(--teal); }
+		.step-dot.current { background: #64bdb6; }
 
 		.step-navigation {
 			display: flex;
@@ -2046,6 +2046,7 @@
 			}
 
 			function recordRating(rating) {
+				clearAdvanceTimer();
 				AudioEngine.stop();
 				const tests = activeTests();
 				const test = tests[state.currentIndex];
@@ -2071,7 +2072,10 @@
 				if (rating === 'uncomfortable') showToast(`${remeasured ? '測り直しました' : '記録しました'}。無理に続けないでください`);
 				else showToast(remeasured ? '測り直した結果を保存しました' : '記録しました');
 
-				const nextIndex = tests.findIndex((item, index) => index > state.currentIndex && !results[state.mode === 'detail' ? detailKey(item) : testKey(item)]);
+				// 結果一覧からの個別の測り直し以外は、測定済みでも順番に進む。
+				const nextIndex = remeasured
+					? tests.findIndex((item, index) => index > state.currentIndex && !results[activeTestKey(item)])
+					: state.currentIndex + 1 < tests.length ? state.currentIndex + 1 : -1;
 				advanceTimer = nextIndex >= 0
 					? setTimeout(() => selectTest(nextIndex), 350)
 					: setTimeout(showCompletion, 350);
@@ -2186,8 +2190,40 @@
 				});
 			}
 
+			function buildMemoText() {
+				const root = $('#memoPreview');
+				const title = root.querySelector('.memo-preview-header h3');
+				if (!title) return '';
+				const lines = [title.textContent, root.querySelector('.memo-preview-header p').textContent.replace(/^最終更新\s*/, '最終更新：')];
+				const indent = (text) => text.trim().replace(/\r?\n/g, '\n  ');
+				root.querySelectorAll('.memo-section').forEach((section) => {
+					lines.push('', `【${section.querySelector('.memo-section-title').textContent}】`);
+					section.querySelectorAll('.memo-context-item').forEach((item) => {
+						lines.push(`${item.querySelector('small').textContent}：${indent(item.querySelector('strong').textContent)}`);
+					});
+					section.querySelectorAll('.fitting-panel').forEach((panel) => {
+						lines.push('', panel.querySelector('.fitting-panel-title').textContent);
+						const frequencies = [...panel.querySelectorAll('thead th')].slice(1).map((cell) => cell.textContent);
+						panel.querySelectorAll('tbody tr').forEach((row) => {
+							const cells = [...row.querySelectorAll('td')];
+							lines.push(`  入力レベル：${cells[0].textContent}（${cells[0].textContent.slice(1)} dB入力相当）`);
+							cells.slice(1).forEach((cell, index) => {
+								const value = cell.textContent.trim();
+								const unit = /^[−-]?\d+(\.\d+)?$/.test(value) ? ' dB' : '';
+								lines.push(`    ${frequencies[index]}：${value}${unit}`);
+							});
+						});
+					});
+					if (section.querySelector('.fitting-panel')) lines.push('', '負数＝その耳を下げる相対目安');
+					section.querySelectorAll('p').forEach((paragraph) => lines.push(indent(paragraph.textContent)));
+				});
+				const disclaimer = root.querySelector('.memo-disclaimer');
+				if (disclaimer) lines.push('', '【注意事項】', disclaimer.textContent);
+				return lines.join('\n').trim();
+			}
+
 			async function copyMemo() {
-				const text = $('#memoPreview').innerText.trim().replace(/\n{3,}/g, '\n\n');
+				const text = buildMemoText();
 				if (!text) {
 					showToast('コピーできる測定結果がありません');
 					return;
